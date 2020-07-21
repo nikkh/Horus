@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30309.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Duracell", "Duracell\Duracell.csproj", "{45A6DE12-A389-4B59-ACCC-A357F17A08AF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{45A6DE12-A389-4B59-ACCC-A357F17A08AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45A6DE12-A389-4B59-ACCC-A357F17A08AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45A6DE12-A389-4B59-ACCC-A357F17A08AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45A6DE12-A389-4B59-ACCC-A357F17A08AF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B42F9AC6-F98E-4C67-99C9-4F2B1500F893}
+	EndGlobalSection
+EndGlobal
