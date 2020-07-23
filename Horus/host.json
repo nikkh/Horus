@@ -1,0 +1,21 @@
+{
+    "version": "2.0",
+  "logging": {
+    "logLevel": {
+      "Host.Triggers.DurableTask": "Warning",
+      "Host.Results": "Warning",
+      "Function": "Trace",
+      "Function.StartPreprocessor": "Trace",
+      "Function.CheckPreprocessorStatus": "Trace",
+      "Function.PreprocessorCompleted": "Trace",
+      "Function.StartRecognizer": "Trace",
+      "Function.CheckRecognizerStatus": "Trace",
+      "Function.RecognizerCompleted": "Trace",
+      "Function.Processor": "Trace",
+      "Function.CosmosWriter": "Trace",
+      "Function.Finisher": "Trace",
+      "Function.Receptionist": "Trace",
+      "default": "Trace"
+    }
+  }
+}
