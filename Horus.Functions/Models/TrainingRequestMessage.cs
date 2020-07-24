@@ -17,4 +17,5 @@ namespace Horus.Functions.Models
         public DateTime UpdatedDateTime { get; set; }
         public string TrainingDocumentResults { get; set; }
     }
+    // deployme
 }
