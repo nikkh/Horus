@@ -77,7 +77,7 @@ namespace Horus.Functions
             string contentType= body["data"]["contentType"].ToString();
             if (!ParsingConstants.AllowedContentTypes.Contains(contentType))
             {
-                log.LogInformation($"Message {messageId} was ignored due to content type ({contentType}).  Valid content types are {string.Join(",", ParsingConstants.AllowedContentTypes.ToArray())}");
+                log.LogInformation($"Message {messageId} was ignored due to content type ({contentType}).  Valid content types are {string.Join(",", ParsingConstants.AllowedContentTypes.ToArray())}.");
                 return false;
             }
 

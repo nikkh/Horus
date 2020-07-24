@@ -5,7 +5,7 @@ env:
 on:
   push:
     paths:
-    - Horus/Horus.Functions/**
+    - Horus.Functions/**
       
 jobs:
   build-and-deploy:
@@ -25,7 +25,7 @@ jobs:
       run: |
         # If your function app project is not located in your repository's root
         # Please consider using pushd to change your path
-        pushd Horus/Horus.Functions
+        pushd Horus.Functions
         dotnet build --configuration Debug --output ./output
         popd 
         
@@ -41,5 +41,5 @@ jobs:
         app-name: ${{env.APPLICATION_NAME}}-func
         # If your function app project is not located in your repository's root
         # Please consider prefixing the project path in this package parameter
-        package: 'Horus/Horus.Functions/output'
+        package: 'Horus.Functions/output'
         
