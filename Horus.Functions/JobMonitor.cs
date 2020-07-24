@@ -17,7 +17,7 @@ namespace Horus.Functions
 {
     public static class JobMonitor
     {
-        
+
         [FunctionName("DocumentMonitor")]
         public static async Task TriggerProcessDocument([ServiceBusTrigger("%IncomingDocumentsQueue%", Connection = "IncomingDocumentServiceBusConnectionString")] Message message, [DurableClient] IDurableOrchestrationClient starter, ILogger log, ExecutionContext ec)
         {
@@ -46,7 +46,9 @@ namespace Horus.Functions
             log.LogInformation($"{ec.FunctionName} function was triggered by receipt of service bus message {message.MessageId}");
             string payload = System.Text.Encoding.UTF8.GetString(message.Body);
             var trm = JsonConvert.DeserializeObject<TrainingRequestMessage>(payload);
-            
+
+            HorusSql.CheckAndCreateDatabaseIfNecessary(log);
+
             var job = new ModelTrainingJob { 
                 BlobFolderName = trm.BlobFolderName,
                 BlobSasUrl = trm.BlobSasUrl,
