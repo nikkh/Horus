@@ -1,6 +1,7 @@
 #!/bin/bash
 if [ -z "$APPLICATION_NAME" ]; then 
-    echo "APPLICATION_NAME must contain application root name (4-6 alphanumeric)"
+    echo "APPLICATION_NAME does not contain an application root name (4-6 alphanumeric), defaulting to horus2"
+    export APPLICATION_NAME=horus2
     exit
 fi
 
@@ -46,11 +47,16 @@ echo "frName=$frName"
 echo "adminLogin=$adminLogin"
 echo "password=$password"
 echo "location=$location"
-RED='\033[1;31m'
-NC='\033[0m'
-echo -e ${RED} 
-read -n 1 -r -s -p $"Press Enter to create the envrionment or Ctrl-C to quit and change environment variables"
-echo -e ${NC} 
+
+if [ -z "$PROMPT_OVERRIDE" ]; then 
+ echo "PROMPT_OVERRIDE is not set - prompting is disabled"  
+else
+    RED='\033[1;31m'
+    NC='\033[0m'
+    echo -e ${RED} 
+    read -n 1 -r -s -p $"Press Enter to create the envrionment or Ctrl-C to quit and change environment variables"
+    echo -e ${NC} 
+fi
 
 docQueueName="incoming-documents"
 trainingQueueName="training-requests"
