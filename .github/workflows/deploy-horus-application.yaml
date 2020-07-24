@@ -1,7 +1,7 @@
 name: Deploy Horus Application
 env:
    LOCATION: uksouth
-   APPLICATION_NAME: horus3
+   APPLICATION_NAME: horus
 on:
   push:
     paths:
