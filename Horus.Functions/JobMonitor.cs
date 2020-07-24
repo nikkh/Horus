@@ -26,7 +26,7 @@ namespace Horus.Functions
             var body = JObject.Parse(payload);
             if (!CanProcessMessage(message.MessageId, body, log))
             {
-                log.LogWarning($"Message {message.MessageId} was ignored.  Please see previous log items for reasons.");
+                log.LogWarning($"Message {message.MessageId} was ignored!  Please see previous log items for reasons.");
                 return;
             }
 
