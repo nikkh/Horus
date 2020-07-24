@@ -5,8 +5,9 @@ on:
  
 name: Deploy Infrastructure
 env:
-  APPLICATION_NAME: horus2
+  APPLICATION_NAME: horus3
   LOCATION: uksouth  
+  SUPPRESS_PROMPT: True
 
 jobs:
   job1:
