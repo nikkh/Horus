@@ -21,26 +21,13 @@ namespace Horus.Functions.Data
                 SqlDataReader reader;
                 command.Connection = connection;
                 command.CommandText = "select name from sysobjects where name = 'ModelTraining'";
-                bool modelTrainingTableExist = false;
                 using (reader = command.ExecuteReader())
                 {
                     if (reader.HasRows)
                     {
-                        modelTrainingTableExist = true;
                         log.LogTrace("Table ModelTraining exists no need to create database tables");
+                        return;
                     }
-                }
-
-                if (modelTrainingTableExist)
-                {
-                    command.CommandText = "select count(*) from ModelTraining as NumberOfTrainedModels";
-                    Int32 numberOfTrainedModels = (Int32)command.ExecuteScalar();
-                    if (numberOfTrainedModels == 0)
-                    {
-                        log.LogCritical($"There are no trained models registered in the database");
-                        throw new Exception("There are no trained models registered in the database");
-                    }
-                    return;
                 }
 
                 log.LogInformation($"Database tables will be created...");
@@ -94,11 +81,7 @@ namespace Horus.Functions.Data
                 log.LogTrace($"Stored Procedure GetModelByDocumentFormat was created.");
 
                 transaction.Commit();
-
-
             }
-            log.LogCritical($"There are no trained models registered in the database");
-            throw new Exception("There are no trained models registered in the database");
         }
 
         public static ModelTrainingRecord GetModelIdByDocumentFormat(string documentFormat)
