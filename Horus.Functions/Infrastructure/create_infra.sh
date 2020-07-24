@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ -z "$APPLICATION_NAME" ]; then 
-    echo "APPLICATION_NAME does not contain an application root name (4-6 alphanumeric), defaulting to horus2"
-    export APPLICATION_NAME=horus2
+    echo "APPLICATION_NAME does not contain an application root name (4-6 alphanumeric), defaulting to HRANDOM"
+    export APPLICATION_NAME=h$RANDOM
     exit
 fi
 
@@ -48,8 +48,8 @@ echo "adminLogin=$adminLogin"
 echo "password=$password"
 echo "location=$location"
 
-if [ -z "$PROMPT_OVERRIDE" ]; then 
- echo "PROMPT_OVERRIDE is not set - prompting is disabled"  
+if [ "$SUPPRESS_CONFIRM" ]; then 
+ echo "SUPPRESS_CONFIRM is set - confirmation is disabled"  
 else
     RED='\033[1;31m'
     NC='\033[0m'
