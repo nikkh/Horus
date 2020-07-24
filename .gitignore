@@ -338,3 +338,5 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/Horus.Trainer/Properties/launchSettings.json
+/Horus.Trainer/appsettings.local.json

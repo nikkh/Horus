@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Horus.Functions.Models
 {
-    public class ModelTraining
+    public class ModelTrainingRecord
     {
         public string DocumentFormat { get; set; }
         public string ModelId { get; set; }

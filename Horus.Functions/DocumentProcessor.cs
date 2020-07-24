@@ -57,6 +57,7 @@ namespace Horus.Functions
         {
             var job = context.GetInput<DocumentProcessingJob>();
             job.OrchestrationId = context.InstanceId;
+            job.Ticks = context.CurrentUtcDateTime.Ticks;
             var snip = $"Orchestration { job.OrchestrationId}: { ec.FunctionName} -";
 
             int pollingInterval = 3;
@@ -98,6 +99,8 @@ namespace Horus.Functions
             catch(Exception ex)
             {
                 log.LogError($"{snip} Exception detected in document processing orchestration {ex}.  Other orchestrations will continue to run.");
+                job.Exception = ex;
+                job = await context.CallActivityAsync<DocumentProcessingJob>("ProcessingErrorHandler", job);
             }
             finally
             {
@@ -105,13 +108,36 @@ namespace Horus.Functions
             }
         }
 
+        [FunctionName("ProcessingErrorHandler")]
+        public async Task<DocumentProcessingJob> ProcessingErrorHandler([ActivityTrigger] DocumentProcessingJob job, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext ec)
+        {
+            try
+            {
+                var snip = $"Orchestration { job.OrchestrationId}: { ec.FunctionName} -";
+                var orchestrationContainer = orchestrationBlobClient.GetContainerReference(job.OrchestrationContainerName);
+                await orchestrationContainer.CreateIfNotExistsAsync();
+                var jobBlobName = $"{job.DocumentFormat}{ParsingConstants.TrainingJobFileExtension}";
+                var jobBlob = orchestrationContainer.GetBlockBlobReference(jobBlobName);
+                await jobBlob.UploadTextAsync(JsonConvert.SerializeObject(job));
+                var exceptionBlobName = $"{job.DocumentFormat}{ParsingConstants.ExceptionExtension}";
+                var exceptionBlob = orchestrationContainer.GetBlockBlobReference(exceptionBlobName);
+                await exceptionBlob.UploadTextAsync(JsonConvert.SerializeObject(job.Exception));
+                log.LogInformation($"{snip} - Exception Handled - Exception of Type {job.Exception.GetType()} added to blob {job.JobBlobName} was uploaded to container{job.OrchestrationContainerName}");
+                return job;
+            }
+            catch (Exception ex)
+            {
+                throw new HorusTerminalException(ex);
+            }
+        }
+
         #region Preprocessing
         [FunctionName("StartPreprocessor")]
         public async Task<DocumentProcessingJob> StartPreprocessor([ActivityTrigger] DocumentProcessingJob job, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext ec)
         {
-            var ticks = DateTime.UtcNow.Ticks.ToString();
+            
             var snip = $"Orchestration { job.OrchestrationId}: { ec.FunctionName} -";
-            var orchestrationContainer = orchestrationBlobClient.GetContainerReference($"{ticks}-{job.OrchestrationId}");
+            var orchestrationContainer = orchestrationBlobClient.GetContainerReference($"{job.OrchestrationId}");
             job.OrchestrationContainerName = orchestrationContainer.Name;
             await orchestrationContainer.CreateIfNotExistsAsync();
             
@@ -282,6 +308,7 @@ namespace Horus.Functions
             timer.Start();
             Document document = new Document { FileName = job.JobBlobName };
             document.UniqueRunIdentifier = job.OrchestrationId;
+            document.FileName = job.OrchestrationBlobName;
             JObject jsonContent = JObject.Parse(job.RecognizerResponse);
             if (jsonContent["status"] != null) document.RecognizerStatus = jsonContent["status"].ToString();
             if (jsonContent["errors"] != null) document.RecognizerErrors = jsonContent["errors"].ToString();
@@ -395,7 +422,7 @@ namespace Horus.Functions
         {
             var snip = $"Orchestration { job.OrchestrationId}: { ec.FunctionName} - ";
             var orchestrationContainer = orchestrationBlobClient.GetContainerReference(job.OrchestrationContainerName);
-            var jobBlobName = $"{job.OrchestrationBlobName}{ParsingConstants.JobFileExtension}";
+            var jobBlobName = $"{job.OrchestrationBlobName}{ParsingConstants.ProcessingJobFileExtension}";
             job.JobBlobName = jobBlobName;
             var jobBlob = orchestrationContainer.GetBlockBlobReference(jobBlobName);
             await jobBlob.UploadTextAsync(JsonConvert.SerializeObject(job));

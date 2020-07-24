@@ -16,13 +16,15 @@ namespace Horus.Functions.Models
         public string ContentType { get;  set; }
         public string Thumbprint { get;  set; }
         public string RecognizerStatusUrl { get; set; }
-        public ModelTraining Model { get; set; }
+        public ModelTrainingRecord Model { get; set; }
         public string RecognizerResponse { get; set; }
         public string RecognizedBlobName { get;  set; }
         public string LatestRecognizerStatus { get;  set; }
         public string JobBlobName { get;  set; }
         public string DocumentName { get;  set; }
         public string DocumentBlobUrl { get;  set; }
-       
+        public Exception Exception { get; set; }
+        public long Ticks { get; set; }
+
     }
 }

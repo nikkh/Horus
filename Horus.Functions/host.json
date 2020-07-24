@@ -11,10 +11,17 @@
       "Function.StartRecognizer": "Trace",
       "Function.CheckRecognizerStatus": "Trace",
       "Function.RecognizerCompleted": "Trace",
-      "Function.Processor": "Trace",
+      "Function.DocumentProcessor": "Trace",
       "Function.CosmosWriter": "Trace",
       "Function.Finisher": "Trace",
-      "Function.Receptionist": "Trace",
+      "Function.DocumentMonitor": "Trace",
+      "Function.TrainingMonitor": "Trace",
+      "Function.ModelTrainer": "Trace",
+      "Function.StartTrainer": "Trace",
+      "Function.CheckTrainerStatus": "Trace",
+      "Function.TrainerCompleted": "Trace",
+      "Function.TrainingErrorHandler": "Trace",
+      "Function.PrcoessingErrorHandler": "Trace",
       "default": "Trace"
     }
   }

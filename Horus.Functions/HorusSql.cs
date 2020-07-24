@@ -101,9 +101,9 @@ namespace Horus.Functions.Data
             throw new Exception("There are no trained models registered in the database");
         }
 
-        public static ModelTraining GetModelIdByDocumentFormat(string documentFormat)
+        public static ModelTrainingRecord GetModelIdByDocumentFormat(string documentFormat)
         {
-            var mt = new ModelTraining();
+            var mt = new ModelTrainingRecord();
             using (SqlConnection connection = new SqlConnection(sqlConnectionString))
             {
                 connection.Open();
@@ -136,7 +136,7 @@ namespace Horus.Functions.Data
             }
         }
 
-        public static void UpdateModelTraining(ModelTrainingJob m, ILogger log)
+        public static ModelTrainingRecord UpdateModelTraining(ModelTrainingJob m, ILogger log)
         {
             using (SqlConnection connection = new SqlConnection(sqlConnectionString))
             {
@@ -195,8 +195,9 @@ namespace Horus.Functions.Data
                     throw e;
                 }
 
+                ModelTrainingRecord mtr = new ModelTrainingRecord { ModelId = m.ModelId, ModelVersion = newVersion, AverageModelAccuracy = m.AverageModelAccuracy, DocumentFormat = m.DocumentFormat, UpdatedDateTime = m.UpdatedDateTime };
                 log.LogInformation($"Training request for document format {m.DocumentFormat}, version={newVersion}, model id={m.ModelId}  was written to the database");
-
+                return mtr;
             }
         }
     }

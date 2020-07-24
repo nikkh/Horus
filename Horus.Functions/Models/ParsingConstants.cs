@@ -39,7 +39,8 @@ namespace Horus.Functions.Models
         public static readonly string ModelVersionKey = "ModelVersion";
         public const int MaxRetriesForBlobLease = 15;
 
-        public static readonly string JobFileExtension = ".job.json";
+        public static readonly string ProcessingJobFileExtension = ".processing.job.json";
+        public static readonly string TrainingJobFileExtension = ".training.job.json";
 
         public static List<string> AllowedContentTypes = new List<string> { "image/jpeg", "image/png", "image/tiff" };
     }

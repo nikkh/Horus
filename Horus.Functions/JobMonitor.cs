@@ -45,9 +45,15 @@ namespace Horus.Functions
         {
             log.LogInformation($"{ec.FunctionName} function was triggered by receipt of service bus message {message.MessageId}");
             string payload = System.Text.Encoding.UTF8.GetString(message.Body);
-            var request = JsonConvert.DeserializeObject<TrainingRequestMessage>(payload);
+            var trm = JsonConvert.DeserializeObject<TrainingRequestMessage>(payload);
             
-            var job = new ModelTrainingJob { };
+            var job = new ModelTrainingJob { 
+                BlobFolderName = trm.BlobFolderName,
+                BlobSasUrl = trm.BlobSasUrl,
+                DocumentFormat = trm.DocumentFormat,
+                IncludeSubFolders = "false",
+                UseLabelFile = "true"
+            };
             string orchestrationId = await starter.StartNewAsync("ModelTrainer", null, job);
             log.LogInformation($"{ec.FunctionName} processed message {message.MessageId}.  Orchestration {orchestrationId}");
         }

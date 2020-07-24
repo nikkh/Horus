@@ -15,11 +15,17 @@ namespace Horus.Functions.Models
         public string RecognizerStatusUrl { get;  set; }
         public string LatestRecognizerStatus { get;  set; }
         public string RecognizerResponse { get;  set; }
-        public string ModelId { get;  set; }
+        public string ModelId { get; set; }
+        public string ModelVersion { get; set; }
         public DateTime CreatedDateTime { get;  set; }
         public DateTime UpdatedDateTime { get;  set; }
         public decimal AverageModelAccuracy { get;  set; }
         public string TrainingDocumentResults { get;  set; }
         public string DocumentFormat { get;  set; }
+       
+        public string JobBlobName { get;  set; }
+        public Exception Exception { get; set; }
+        public long Ticks { get; set; }
+        public string OrchestrationContainerName { get; set; }
     }
 }
