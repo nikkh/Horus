@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Dynamitey.DynamicObjects;
 using Horus.Functions.Data;
 using Horus.Functions.Models;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.ServiceBus;
+using Microsoft.Azure.ServiceBus.Diagnostics;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Host;
@@ -15,13 +17,19 @@ using Newtonsoft.Json.Linq;
 
 namespace Horus.Functions
 {
-    public static class JobMonitor
+    public class JobMonitor
     {
 
+        public JobMonitor(TelemetryConfiguration telemetryConfig) 
+        {
+            
+        }
+
         [FunctionName("DocumentMonitor")]
-        public static async Task TriggerProcessDocument([ServiceBusTrigger("%IncomingDocumentsQueue%", Connection = "IncomingDocumentServiceBusConnectionString")] Message message, [DurableClient] IDurableOrchestrationClient starter, ILogger log, ExecutionContext ec)
+        public async Task TriggerProcessDocument([ServiceBusTrigger("%IncomingDocumentsQueue%", Connection = "IncomingDocumentServiceBusConnectionString")] Message message, [DurableClient] IDurableOrchestrationClient starter, ILogger log, ExecutionContext ec)
         {
             log.LogInformation($"{ec.FunctionName} function was triggered by receipt of service bus message {message.MessageId}");
+            var activity = message.ExtractActivity();
             string payload = System.Text.Encoding.UTF8.GetString(message.Body);
             var body = JObject.Parse(payload);
             if (!CanProcessMessage(message.MessageId, body, log))
@@ -41,7 +49,7 @@ namespace Horus.Functions
         }
 
         [FunctionName("TrainingMonitor")]
-        public static async Task TriggerTrainModel([ServiceBusTrigger("%TrainingQueue%", Connection = "IncomingDocumentServiceBusConnectionString")] Message message, [DurableClient] IDurableOrchestrationClient starter, ILogger log, ExecutionContext ec)
+        public async Task TriggerTrainModel([ServiceBusTrigger("%TrainingQueue%", Connection = "IncomingDocumentServiceBusConnectionString")] Message message, [DurableClient] IDurableOrchestrationClient starter, ILogger log, ExecutionContext ec)
         {
             log.LogInformation($"{ec.FunctionName} function was triggered by receipt of service bus message {message.MessageId}");
             string payload = System.Text.Encoding.UTF8.GetString(message.Body);
