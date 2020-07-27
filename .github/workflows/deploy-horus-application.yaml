@@ -2,10 +2,7 @@ name: Deploy Horus Application
 env:
    LOCATION: uksouth
    APPLICATION_NAME: horus1
-on:
-  push:
-    paths:
-    - Horus.Functions/**
+on: [workflow_dispatch]
       
 jobs:
   build-and-deploy:
