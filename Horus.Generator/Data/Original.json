@@ -1,0 +1,144 @@
+{
+  "Header": {
+    "SupplierKey" :  "Powerbooks",
+    "SupplierName": "PowerBooks Inc � Sample Street 42 � 56789 Cologne",
+    "SupplierFullName": "PowerBooks Inc � Sample Street 42 � 56789 Cologne � Germany",
+    "LogoFile": "../../images/PowerBooks.png",
+    "DocumentType": "INVOICE",
+    "BuilderAssembly": "Horus.Generator",
+    "BuilderType": "Builders.OriginalDocumentBuilder"
+  },
+  "Documents": [
+    {
+      "Lines": [
+        {
+          "ItemNumber": "1",
+          "Title": "How to drive a Lotus",
+          "Author": "Adrian Brown",
+          "Isbn": "0987987987",
+          "Quantity": 4.0,
+          "Discount": 5.0,
+          "Price": 38.1255,
+          "PercentageTax": null,
+          "Taxable": null,
+          "ExtendedPrice": null,
+          "ExtendedPricePlusTax": null
+        },
+        {
+          "ItemNumber": "2",
+          "Title": "My hair was grey",
+          "Author": "Jim Hirsch",
+          "Isbn": "0987987987",
+          "Quantity": 4.0,
+          "Discount": 5.0,
+          "Price": 38.12,
+          "PercentageTax": null,
+          "Taxable": null,
+          "ExtendedPrice": null,
+          "ExtendedPricePlusTax": null
+        },
+        {
+          "ItemNumber": "3",
+          "Title": "How to drive a Lotus",
+          "Author": "Don Givens",
+          "Isbn": "0987987987",
+          "Quantity": 4.0,
+          "Discount": 5.0,
+          "Price": 38.12,
+          "PercentageTax": null,
+          "Taxable": null,
+          "ExtendedPrice": null,
+          "ExtendedPricePlusTax": null
+        },
+        {
+          "ItemNumber": "4",
+          "Title": "How to drive a Lotus",
+          "Author": "Stan Collins",
+          "Isbn": "0987987987",
+          "Quantity": 4.0,
+          "Discount": 5.0,
+          "Price": 38.12,
+          "PercentageTax": null,
+          "Taxable": null,
+          "ExtendedPrice": null,
+          "ExtendedPricePlusTax": null
+        },
+        {
+          "ItemNumber": "5",
+          "Title": "How to drive a Lotus",
+          "Author": "David Harpur",
+          "Isbn": "0987987987",
+          "Quantity": 4.0,
+          "Discount": 5.0,
+          "Price": 38.12,
+          "PercentageTax": null,
+          "Taxable": null,
+          "ExtendedPrice": null,
+          "ExtendedPricePlusTax": null
+        },
+        {
+          "ItemNumber": "6",
+          "Title": "How to drive a Lotus",
+          "Author": "Jean Brodie",
+          "Isbn": "0987987987",
+          "Quantity": 4.0,
+          "Discount": 5.0,
+          "Price": 38.12,
+          "PercentageTax": null,
+          "Taxable": null,
+          "ExtendedPrice": null,
+          "ExtendedPricePlusTax": null
+        }
+      ],
+      "InvoiceTo": "What is invoiceTo?",
+      "SingleName": "Nicholas Hill",
+      "AddressLine1": "9 Kingshayes Road",
+      "AddressLine2": "Aldridge",
+      "PostalCode": "WS9 8RT",
+      "City": "Walsall",
+      "Notes": "This is a sample invoice created with MigraDoc. This note may be a quote of the day or something...",
+      "DocumentNumber": "987741222",
+      "DocumentDate": "01/08/2020"
+    },
+    {
+      "Lines": [
+        {
+          "ItemNumber": "1",
+          "Title": "How to drive a Lotus",
+          "Author": "Adrian Brown",
+          "Isbn": "0987987987",
+          "Quantity": 4.0,
+          "Discount": 5.0,
+          "Price": 38.12,
+          "PercentageTax": null,
+          "Taxable": null,
+          "ExtendedPrice": null,
+          "ExtendedPricePlusTax": null
+        },
+        {
+          "ItemNumber": "2",
+          "Title": "How to drive a Lotus",
+          "Author": "Jim Price",
+          "Isbn": "0987987987",
+          "Quantity": 4.0,
+          "Discount": 5.0,
+          "Price": 38.12,
+          "PercentageTax": null,
+          "Taxable": null,
+          "ExtendedPrice": null,
+          "ExtendedPricePlusTax": null
+        },
+    
+      ],
+      "InvoiceTo": "What is invoiceTo?",
+      "SingleName": "Jonah Lewie",
+      "AddressLine1": "19 Kingshayes Road",
+      "AddressLine2": "Aldridge",
+      "PostalCode": "WS9 8RT",
+      "City": "Walsall",
+      "Notes": "This is a sample invoice created with MigraDoc. This note may be a quote of the day or something...",
+      "DocumentNumber": "987741223",
+      "DocumentDate": "27/07/2020"
+    }
+  ]
+}
