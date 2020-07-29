@@ -38,7 +38,7 @@ namespace Horus.Generator.Builders
     /// <summary>
     /// Creates the invoice form.
     /// </summary>
-    public class OriginalDocumentBuilder : DocumentBuilder
+    public class NouryonDocumentBuilder : DocumentBuilder
     {
         /// <summary>
         /// The MigraDoc document that represents the invoice.
@@ -55,7 +55,7 @@ namespace Horus.Generator.Builders
         Table table;
 
 
-        public OriginalDocumentBuilder(GeneratorHeader header, GeneratorDocument generatorDocument) : base(header, generatorDocument)
+        public NouryonDocumentBuilder(GeneratorHeader header, GeneratorDocument generatorDocument) : base(header, generatorDocument)
         {
 
         }
@@ -126,10 +126,8 @@ namespace Horus.Generator.Builders
             paragraph = section.AddParagraph();
             paragraph.Format.SpaceBefore = "8cm";
             paragraph.Style = "Reference";
-            paragraph.AddFormattedText($"{header.DocumentType} {generatorDocument.DocumentNumber}", TextFormat.Bold);
-            paragraph.AddTab();
-            paragraph.AddText("Cologne, ");
-            paragraph.AddDateField("dd.MM.yyyy");
+            paragraph.AddFormattedText($"A/C {generatorDocument.Account} {header.DocumentType} {generatorDocument.DocumentNumber}", TextFormat.Bold);
+                       
 
             // Create the item table
             this.table = section.AddTable();
@@ -170,7 +168,7 @@ namespace Horus.Generator.Builders
             row.Cells[0].Format.Alignment = ParagraphAlignment.Left;
             row.Cells[0].VerticalAlignment = VerticalAlignment.Bottom;
             row.Cells[0].MergeDown = 1;
-            row.Cells[1].AddParagraph("Title and Author");
+            row.Cells[1].AddParagraph("Product and Description");
             row.Cells[1].Format.Alignment = ParagraphAlignment.Left;
             row.Cells[1].MergeRight = 3;
             row.Cells[5].AddParagraph("Extended Price");
@@ -187,7 +185,7 @@ namespace Horus.Generator.Builders
             row.Cells[1].Format.Alignment = ParagraphAlignment.Left;
             row.Cells[2].AddParagraph("Unit Price");
             row.Cells[2].Format.Alignment = ParagraphAlignment.Left;
-            row.Cells[3].AddParagraph("Discount (%)");
+            row.Cells[3].AddParagraph("Discount");
             row.Cells[3].Format.Alignment = ParagraphAlignment.Left;
             row.Cells[4].AddParagraph("Taxable");
             row.Cells[4].Format.Alignment = ParagraphAlignment.Left;
@@ -211,14 +209,13 @@ namespace Horus.Generator.Builders
             paragraph.AddLineBreak();
             paragraph.AddText(generatorDocument.PostalCode + " " + generatorDocument.City);
             paragraph.AddLineBreak();
-            paragraph.AddText(generatorDocument.Account);
+            paragraph.AddText($"{generatorDocument.DocumentDate}");
 
-            double totalExtendedPrice = 0;
-            foreach (var itemx in generatorDocument.Lines)
+
+
+            foreach (var item in generatorDocument.Lines)
             {
-                double quantity = itemx.Quantity;
-                double price = itemx.Price;
-                double discount = itemx.Discount;
+                
                 Row row1 = this.table.AddRow();
                 Row row2 = this.table.AddRow();
                 row1.TopPadding = 1.5;
@@ -230,22 +227,19 @@ namespace Horus.Generator.Builders
                 row1.Cells[5].Shading.Color = TableGray;
                 row1.Cells[5].MergeDown = 1;
 
-                row1.Cells[0].AddParagraph(itemx.ItemNumber);
+                row1.Cells[0].AddParagraph(item.ItemNumber);
                 paragraph = row1.Cells[1].AddParagraph();
-                paragraph.AddFormattedText(itemx.Title, TextFormat.Bold);
-                //paragraph.AddFormattedText(" by ", TextFormat.Italic);
-                // paragraph.AddText(itemx.Author);
-                row2.Cells[1].AddParagraph(quantity.ToString());
-                row2.Cells[2].AddParagraph(price.ToString("0.000") + " �");
-                row2.Cells[3].AddParagraph(discount.ToString("0.0"));
-                row2.Cells[4].AddParagraph();
-                row2.Cells[5].AddParagraph(price.ToString("0.00"));
-                double extendedPrice = quantity * price;
-                extendedPrice = extendedPrice * (100 - discount) / 100;
-                row1.Cells[5].AddParagraph(extendedPrice.ToString("0.00") + " �");
+                paragraph.AddFormattedText($"{item.Isbn} {item.Title}", TextFormat.Italic);
+                row2.Cells[1].AddParagraph(item.Quantity.ToString());
+                row2.Cells[2].AddParagraph(item.Price.ToString("0.00000"));
+                row2.Cells[3].AddParagraph($"{item.Discount.ToString("0")}% / {item.DiscountValue.ToString("0.00")}");
+                row1.Cells[5].AddParagraph(item.DiscountedGoodsValue.ToString("0.00"));
                 row1.Cells[5].VerticalAlignment = VerticalAlignment.Bottom;
-                totalExtendedPrice += extendedPrice;
-
+                if (item.Taxable)
+                {
+                    row2.Cells[4].AddParagraph("x");
+                    
+                }
                 this.table.SetEdge(0, this.table.Rows.Count - 2, 6, 2, Edge.Box, BorderStyle.Single, 0.75);
             }
 
@@ -260,7 +254,7 @@ namespace Horus.Generator.Builders
             row.Cells[0].Format.Font.Bold = true;
             row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
             row.Cells[0].MergeRight = 4;
-            row.Cells[5].AddParagraph(totalExtendedPrice.ToString("0.00") + " �");
+            row.Cells[5].AddParagraph(generatorDocument.PreTaxTotalValue.ToString("0.00"));
 
             // Add the VAT row
             row = this.table.AddRow();
@@ -269,13 +263,14 @@ namespace Horus.Generator.Builders
             row.Cells[0].Format.Font.Bold = true;
             row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
             row.Cells[0].MergeRight = 4;
-            row.Cells[5].AddParagraph((0.19 * totalExtendedPrice).ToString("0.00") + " �");
+            row.Cells[5].AddParagraph(generatorDocument.TaxTotalValue.ToString("0.00"));
 
             // Add the additional fee row
+          
             row = this.table.AddRow();
             row.Cells[0].Borders.Visible = false;
             row.Cells[0].AddParagraph("Shipping and Handling");
-            row.Cells[5].AddParagraph(0.ToString("0.00") + " �");
+            row.Cells[5].AddParagraph(generatorDocument.ShippingTotalValue.ToString("0.00"));
             row.Cells[0].Format.Font.Bold = true;
             row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
             row.Cells[0].MergeRight = 4;
@@ -287,20 +282,23 @@ namespace Horus.Generator.Builders
             row.Cells[0].Format.Font.Bold = true;
             row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
             row.Cells[0].MergeRight = 4;
-            totalExtendedPrice += 0.19 * totalExtendedPrice;
-            row.Cells[5].AddParagraph(totalExtendedPrice.ToString("0.00") + " �");
+           
+            row.Cells[5].AddParagraph(generatorDocument.GrandTotalValue.ToString("0.00"));
 
             // Set the borders of the specified cell range
             this.table.SetEdge(5, this.table.Rows.Count - 4, 1, 4, Edge.Box, BorderStyle.Single, 0.75);
 
             // Add the notes paragraph
-            paragraph = this.document.LastSection.AddParagraph();
-            paragraph.Format.SpaceBefore = "1cm";
-            paragraph.Format.Borders.Width = 0.75;
-            paragraph.Format.Borders.Distance = 3;
-            paragraph.Format.Borders.Color = TableBorder;
-            paragraph.Format.Shading.Color = TableGray;
-            if (generatorDocument.Notes != null) paragraph.AddText(generatorDocument.Notes);
+            if (!string.IsNullOrEmpty(generatorDocument.Notes))
+            {
+                paragraph = this.document.LastSection.AddParagraph();
+                paragraph.Format.SpaceBefore = "1cm";
+                paragraph.Format.Borders.Width = 0.75;
+                paragraph.Format.Borders.Distance = 3;
+                paragraph.Format.Borders.Color = TableBorder;
+                paragraph.Format.Shading.Color = TableGray;
+                paragraph.AddText(generatorDocument.Notes);
+            }
         }
 
        

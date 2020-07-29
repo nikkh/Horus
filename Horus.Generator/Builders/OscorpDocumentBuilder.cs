@@ -40,21 +40,21 @@ namespace Horus.Generator.Builders
     /// <summary>
     /// Creates the invoice form.
     /// </summary>
-    public class TraditionalDocumentBuilder : DocumentBuilder
+    public class OscorpDocumentBuilder : DocumentBuilder
     {
 
         TextFrame addressFrame;
         Table table;
 
-        public TraditionalDocumentBuilder(GeneratorHeader header, GeneratorDocument generatorDocument) : base(header, generatorDocument){}
+        public OscorpDocumentBuilder(GeneratorHeader header, GeneratorDocument generatorDocument) : base(header, generatorDocument){}
         
         public override Document Build()
         {
             // Create a new MigraDoc document
             this.document = new Document();
-            this.document.Info.Title = "A sample document";
-            this.document.Info.Subject = "Enables for recognition gameification";
-            this.document.Info.Author = "Horus.Generator";
+            this.document.Info.Title = "A sample invoice";
+            this.document.Info.Subject = "Demonstrates how to create an invoice.";
+            this.document.Info.Author = "Stefan Lange";
 
             DefineStyles();
             CreatePage();
@@ -70,7 +70,7 @@ namespace Horus.Generator.Builders
         {
             // Each MigraDoc document needs at least one section.
             Section section = this.document.AddSection();
-
+            section.PageSetup.Orientation = Orientation.Landscape;
             // Put a logo in the header
             Image image = section.Headers.Primary.AddImage(header.LogoFile);
             image.Height = "2.5cm";
@@ -109,7 +109,7 @@ namespace Horus.Generator.Builders
             paragraph.Style = "Reference";
             paragraph.AddFormattedText($"{header.DocumentType} {generatorDocument.DocumentNumber}", TextFormat.Bold);
             paragraph.AddTab();
-            paragraph.AddText(generatorDocument.DocumentDate);
+            paragraph.AddText($"Taxpoint: {generatorDocument.DocumentDate}");
             // paragraph.AddDateField("dd.MM.yyyy");
 
             // Create the item table
@@ -187,29 +187,29 @@ namespace Horus.Generator.Builders
             paragraph.AddLineBreak();
             paragraph.AddText(generatorDocument.Account);
 
-            double totalExtendedPrice = 0;
+           
             foreach (var item in generatorDocument.Lines)
             {
-                double quantity = item.Quantity;
-                double price = item.Price;
-                double discount = item.Discount;
-                              
+                                              
                 Row row1 = this.table.AddRow();
 
                 row1.Cells[0].AddParagraph(item.ItemNumber);
                 row1.Cells[1].AddParagraph($"{item.Isbn} {item.Title}");
-                row1.Cells[2].AddParagraph(quantity.ToString());
-                row1.Cells[3].AddParagraph(price.ToString("0.000"));
-                row1.Cells[4].AddParagraph(discount.ToString("0.0"));
-                row1.Cells[5].AddParagraph("x");
-                double extendedPrice = quantity * price;
-                extendedPrice = extendedPrice * (100 - discount) / 100;
-                row1.Cells[6].AddParagraph(extendedPrice.ToString("0.00"));
+                row1.Cells[2].AddParagraph(item.Quantity.ToString());
+                row1.Cells[3].AddParagraph(item.Price.ToString("0.000"));
+                row1.Cells[4].AddParagraph(item.Discount.ToString("0.0"));
+                if (item.Taxable)
+                {
+                    row1.Cells[5].AddParagraph("x");
+                }
+                
+                row1.Cells[6].AddParagraph(item.DiscountedGoodsValue.ToString("0.00"));
                 row1.Cells[6].VerticalAlignment = VerticalAlignment.Bottom;
-                totalExtendedPrice += extendedPrice;
+                
 
                 this.table.SetEdge(0, this.table.Rows.Count - 2, 6, 2, Edge.Box, BorderStyle.Single, 0.75);
             }
+           
 
             // Add an invisible row as a space line to the table
             Row row = this.table.AddRow();
@@ -218,11 +218,11 @@ namespace Horus.Generator.Builders
             // Add the total price row
             row = this.table.AddRow();
             row.Cells[0].Borders.Visible = false;
-            row.Cells[0].AddParagraph("Total Price");
+            row.Cells[0].AddParagraph("Pre-Tax Amount");
             row.Cells[0].Format.Font.Bold = true;
             row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
             row.Cells[0].MergeRight = 5;
-            row.Cells[6].AddParagraph(totalExtendedPrice.ToString("0.00"));
+            row.Cells[6].AddParagraph(generatorDocument.PreTaxTotalValue.ToString("0.00"));
 
             // Add the VAT row
             row = this.table.AddRow();
@@ -231,16 +231,13 @@ namespace Horus.Generator.Builders
             row.Cells[0].Format.Font.Bold = true;
             row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
             row.Cells[0].MergeRight = 5;
-            row.Cells[6].AddParagraph((0.19 * totalExtendedPrice).ToString("0.00"));
-
-            Random r = new Random();
-            double shipping = r.NextDouble() * 37;
-
+            row.Cells[6].AddParagraph(generatorDocument.TaxTotalValue.ToString("0.00"));
+    
             // Add the additional fee row
             row = this.table.AddRow();
             row.Cells[0].Borders.Visible = false;
             row.Cells[0].AddParagraph("Shipping and Handling");
-            row.Cells[6].AddParagraph(shipping.ToString("0.00"));
+            row.Cells[6].AddParagraph(generatorDocument.ShippingTotalValue.ToString("0.00"));
             row.Cells[0].Format.Font.Bold = true;
             row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
             row.Cells[0].MergeRight = 5;
@@ -252,21 +249,22 @@ namespace Horus.Generator.Builders
             row.Cells[0].Format.Font.Bold = true;
             row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
             row.Cells[0].MergeRight = 5;
-            totalExtendedPrice += 0.19 * totalExtendedPrice;
-            totalExtendedPrice += shipping;
-            row.Cells[6].AddParagraph(totalExtendedPrice.ToString("0.00"));
+            row.Cells[6].AddParagraph(generatorDocument.GrandTotalValue.ToString("0.00"));
 
             // Set the borders of the specified cell range
             this.table.SetEdge(5, this.table.Rows.Count - 4, 1, 4, Edge.Box, BorderStyle.Single, 0.75);
 
             // Add the notes paragraph
-            paragraph = this.document.LastSection.AddParagraph();
-            paragraph.Format.SpaceBefore = "1cm";
-            paragraph.Format.Borders.Width = 0.75;
-            paragraph.Format.Borders.Distance = 3;
-            paragraph.Format.Borders.Color = TableBorder;
-            paragraph.Format.Shading.Color = TableGray;
-            if (generatorDocument.Notes != null) paragraph.AddText(generatorDocument.Notes);
+            if (!string.IsNullOrEmpty(generatorDocument.Notes))
+            {
+                paragraph = this.document.LastSection.AddParagraph();
+                paragraph.Format.SpaceBefore = "1cm";
+                paragraph.Format.Borders.Width = 0.75;
+                paragraph.Format.Borders.Distance = 3;
+                paragraph.Format.Borders.Color = TableBorder;
+                paragraph.Format.Shading.Color = TableGray;
+                paragraph.AddText(generatorDocument.Notes);
+            } 
         }
 
        

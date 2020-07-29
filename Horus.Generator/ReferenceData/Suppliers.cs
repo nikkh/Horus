@@ -14,11 +14,12 @@ namespace Horus.Generator.ReferenceData
             suppliers.Add(1, new Supplier
             {
                 LogoFile = "../../images/oscorp.jpg",
-                SupplierName = "Oscorp Metals | 14 Darlington St | Wolverhampton | WV1 2DC",
-                SupplierFullName = "Oscorp Metals | 14 Darlington St | Wolverhampton | WV1 2DC | 01902 887887",
+                SupplierName = "Oscorp Chemicals | 14 Darlington St | Wolverhampton | WV1 2DC",
+                SupplierFullName = "Oscorp Chemicals | 14 Darlington St | Wolverhampton | WV1 2DC | 01902 887887",
                 SupplierKey = "oscorp",
                 BuilderAssembly = "Horus.Generator",
-                BuilderType = "Builders.LandscapeDocumentBuilder"
+                BuilderType = "Builders.OscorpDocumentBuilder",
+                MaxLines = 6
             });
  
             suppliers.Add(2, new Supplier
@@ -27,17 +28,19 @@ namespace Horus.Generator.ReferenceData
                 SupplierName = "ABC Generics | 42 Reform Street, Rushall | Walsall WS8 4BX",
                 SupplierFullName = "ABC Generics | 42 Reform Street, Rushall | Walsall WS8 4BX, United Kingdom | 01922 219912",
                 SupplierKey = "abc",
-                 BuilderAssembly = "Horus.Generator",
-                BuilderType = "Builders.TraditionalDocumentBuilder"
+                BuilderAssembly = "Horus.Generator",
+                BuilderType = "Builders.ABCDocumentBuilder",
+                MaxLines = 20
             });
             suppliers.Add(3, new Supplier
             {
-                LogoFile = "../../images/PowerBooks.png",
-                SupplierName = "PowerBooks Inc � Sample Street 42 � 56789 Cologne",
-                SupplierFullName = "PowerBooks Inc � Sample Street 42 � 56789 Cologne � Germany",
-                SupplierKey = "powerbooks",
-                 BuilderAssembly = "Horus.Generator",
-                BuilderType = "Builders.OriginalDocumentBuilder"
+                LogoFile = "../../images/Nouryon.png",
+                SupplierName = "Nouryon Inc � Sample Street 42 � 56789 Cologne",
+                SupplierFullName = "Nouryon Inc � Sample Street 42 � 56789 Cologne � Germany",
+                SupplierKey = "Nouryon",
+                BuilderAssembly = "Horus.Generator",
+                BuilderType = "Builders.NouryonDocumentBuilder",
+                MaxLines = 15
             });
         }
         public Supplier GetRandomSupplier()
@@ -45,6 +48,17 @@ namespace Horus.Generator.ReferenceData
             Random r = new Random();
             int i = r.Next(1, suppliers.Count);
                 return suppliers[i];
+        }
+
+        public List<Supplier> GetSuppliers() 
+        {
+            var retval = new List<Supplier>();
+            foreach (var item in suppliers)
+            {
+                retval.Add(item.Value);
+            }
+            return retval;
+            
         }
     }
 
@@ -58,5 +72,6 @@ namespace Horus.Generator.ReferenceData
         public string BuilderAssembly { get; set; }
 
         public string BuilderType { get; set; }
+        public int MaxLines { get;  set; }
     }
 }

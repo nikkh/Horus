@@ -17,18 +17,9 @@ namespace Horus.Generator
     {
         static Random random = new Random();
 
-        static int maxDocuments = 30;
-        static int maxLines = 8;
-        static int baseDocumentNumber = 15000;
-
-       
-        public static GeneratorSpecification Generate()
+        public static GeneratorSpecification Generate(Supplier supplier, int numDocuments = 1, int baseDocumentNumber = 15000)
         {
-
-           
             var gs = new GeneratorSpecification();
-            var supplier = new Suppliers().GetRandomSupplier();
-
             gs.Header = new GeneratorHeader
             {
                 LogoFile = supplier.LogoFile,
@@ -38,17 +29,15 @@ namespace Horus.Generator
                 SupplierName = supplier.SupplierName,
                 BuilderAssembly = supplier.BuilderAssembly,
                 BuilderType = supplier.BuilderType
-
             };
 
             gs.Documents = new List<GeneratorDocument>();
-            var numDocuments = random.Next(1, maxDocuments);
-
+           
             for (int d = 0; d < numDocuments; d++)
             {
                 GeneratorDocument gd = new GeneratorDocument();
                 gd.DocumentNumber = (baseDocumentNumber + 1 + d).ToString();
-                gd.DocumentDate = DateTime.Now.Subtract(new TimeSpan(random.Next(1, 60), 0, 0, 0)).ToString("DD-MM-YYYY");
+                gd.DocumentDate = DateTime.Now.Subtract(new TimeSpan(random.Next(1, 180), 0, 0, 0)).ToString("dd/MM/yyyy");
                 if (random.Next(1,10) <= 3) gd.Notes = "Need to do something with this";
                 var account = Accounts.GetRandomAccount();
                 gd.PostalCode = account.PostalCode;
@@ -58,7 +47,7 @@ namespace Horus.Generator
                 gd.AddressLine2 = account.AddressLine2;
                 gd.City = account.City;
                 gd.Lines = new List<GeneratorDocumentLineItem>();
-                var numLines =  random.Next(1, maxLines);
+                var numLines =  random.Next(1, supplier.MaxLines);
 
                 for (int l = 0; l < numLines; l++)
                 {
@@ -70,7 +59,7 @@ namespace Horus.Generator
                     gdli.Price = product.Price;
                     gdli.Title = product.Title;
                     gdli.Quantity = random.Next(1, 100);
-                    gdli.Taxable = product.Taxable.ToString();
+                    gdli.Taxable = product.Taxable;
                     gd.Lines.Add(gdli);
 
                 }

@@ -33,8 +33,11 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using Horus.Generator.Builders;
 using Horus.Generator.Models;
+using Horus.Generator.ReferenceData;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.Rendering;
 using Newtonsoft.Json;
@@ -43,59 +46,78 @@ namespace Horus.Generator
 {
     class Program
     {
-        
+        const int DOCS_TO_GENERATE = 500;
         static void Main(string[] args)
         {
-
-            var genSpec = Generator.Generate();
-
-            //string spec = File.ReadAllText($"{Directory.GetCurrentDirectory()}\\Data\\{args[0]}");
-            //GeneratorSpecification genSpec= JsonConvert.DeserializeObject<GeneratorSpecification>(spec);
-
-            //genSpec.Header.SupplierNameProperties = new Dictionary<string, string>();
-            //genSpec.Header.SupplierNameProperties.Add("paragraph.Format.Font.Size", "18");
-            //genSpec.Header.SupplierNameProperties.Add("paragraph.Format.Font.Name", "Comic Sans MS");
-            //genSpec.Header.SupplierNameProperties.Add("paragraph.Format.SpaceAfter", "3");
-
-            var temp = JsonConvert.SerializeObject(genSpec);
-           
-            var outputDirName = $"{Directory.GetCurrentDirectory()}\\{genSpec.Header.SupplierKey}";
-            if (!Directory.Exists(outputDirName))
+            var startTime = DateTime.Now;
+            var docCount = 0;
+            Console.WriteLine($"Welcome to Horus Document Generator!");
+            Console.WriteLine($"today we will be generating {DOCS_TO_GENERATE} documents for each supplier");
+                        
+            foreach (var supplier in new Suppliers().GetSuppliers())
             {
-                Directory.CreateDirectory(outputDirName);
-            }
-
-            try
-            {
-                foreach (var item in genSpec.Documents)
+                Console.WriteLine($"processing supplier {supplier.SupplierName.Split('|')[0]}");
+                int nextDocNumber=15000;
+                var outputDirName = $"{Directory.GetCurrentDirectory()}\\generated\\{supplier.SupplierKey.ToLower()}";
+                if (!Directory.Exists(outputDirName))
                 {
-                    var documentBuilder = BuilderFactory.GetBuilder(genSpec.Header.BuilderAssembly, genSpec.Header.BuilderType, genSpec.Header, item);
-                    var document = documentBuilder.Build();
-                    document.UseCmykColor = true;
-                    PdfDocumentRenderer pdfRenderer = new PdfDocumentRenderer(true)
+                    Directory.CreateDirectory(outputDirName);
+                }
+                else
+                {
+                    var pdfs = Directory.GetFiles(outputDirName);
+                    nextDocNumber = Int32.Parse(pdfs.Last().Split('\\').Last().Split('.')[0].Split('-')[1]);
+                }
+                Console.WriteLine($"files will be saved to {outputDirName}");
+                Console.WriteLine($"first document number for this run will be {nextDocNumber+1}");
+                Console.WriteLine($"generating documents...");
+                var genSpec = Generator.Generate(supplier, DOCS_TO_GENERATE, nextDocNumber);
+                Console.WriteLine($"generating complete...");
+                Console.WriteLine($"Building a document image for each of the generated documents");
+                try
+                {
+                    int i = 0;
+                    foreach (var item in genSpec.Documents)
                     {
-                        Document = document
-                    };
-                    pdfRenderer.RenderDocument();
+                        i++;
+                        docCount++;
+                        var docStartTime = DateTime.Now;
+                        Console.WriteLine($"Building image {i} of {genSpec.Documents.Count}");
+                        var documentBuilder = BuilderFactory.GetBuilder(genSpec.Header.BuilderAssembly, genSpec.Header.BuilderType, genSpec.Header, item);
+                        var document = documentBuilder.Build();
+                        document.UseCmykColor = true;
+                        Console.WriteLine($"Rendering image {i} to PDF");
+                        PdfDocumentRenderer pdfRenderer = new PdfDocumentRenderer(true)
+                        {
+                            Document = document
+                        };
+                        pdfRenderer.RenderDocument();
 
-                    string filename = $"{outputDirName}\\{genSpec.Header.DocumentType}-{item.DocumentNumber}.pdf";
-                    if (File.Exists(filename)) File.Delete(filename);
-                    pdfRenderer.Save(filename);
+                        string fileName = $"{genSpec.Header.DocumentType}-{item.DocumentNumber}.pdf";
+                        string fileNameWithDirectory = $"{outputDirName}\\{fileName}";
+                        Console.WriteLine($"Saving image {i} to {fileNameWithDirectory}");
+                        if (File.Exists(fileNameWithDirectory)) File.Delete(fileNameWithDirectory);
+                        pdfRenderer.Save(fileNameWithDirectory);
+                        var docEndTime = DateTime.Now;
+                        Console.WriteLine($"Generation of {fileName} took {(docEndTime - docStartTime).TotalMilliseconds} ms.");
 #if DEBUG
-                    Process.Start(filename);
+                        // Process.Start(filename);
 #endif
+                    }
+                   
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    Console.ReadLine();
+                    throw ex;
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                Console.ReadLine();
-                throw ex;
-            }
+            var endTime = DateTime.Now;
+            Console.WriteLine($"Generated {docCount} documents in {(endTime - startTime).TotalSeconds} seconds.");
+            Console.WriteLine("Press any key to continue");
+            Console.ReadKey();
         }
-
-
-    //
     }
 
-    }
+}

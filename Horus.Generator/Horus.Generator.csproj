@@ -72,9 +72,9 @@
     <Compile Include="Builders\BuilderFactory.cs" />
     <Compile Include="Builders\DocumentBuilder.cs" />
     <Compile Include="Builders\IDocumentBuilder.cs" />
-    <Compile Include="Builders\LandscapeDocumentBuilder.cs" />
-    <Compile Include="Builders\TraditionalDocumentBuilder.cs" />
-    <Compile Include="Builders\OriginalDocumentBuilder.cs" />
+    <Compile Include="Builders\OscorpDocumentBuilder.cs" />
+    <Compile Include="Builders\ABCDocumentBuilder.cs" />
+    <Compile Include="Builders\NouryonDocumentBuilder.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="Models\GeneratorDocument.cs" />
     <Compile Include="Models\GeneratorDocumentLineItem.cs" />
@@ -104,6 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App.ico" />
+    <Content Include="Images\Nouryon.png" />
     <Content Include="Images\OIP.jpg" />
     <Content Include="Images\Oscorp.jpg" />
     <Content Include="Images\PowerBooks.png" />
