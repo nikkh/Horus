@@ -12,6 +12,7 @@ namespace Horus.Functions.Models
         public decimal UnitPrice { get; set; }
 
         public string VATCode { get; set; }
+        public string Taxableindicator { get; set; }
         public string DocumentLineNumber { get; set; }
         public decimal NetAmount { get; set; }
         public decimal CalculatedLineQuantity {
@@ -23,7 +24,6 @@ namespace Horus.Functions.Models
 
               protected set { }
             }
-            
-       
+        public decimal DiscountPercent { get; set; }
     }
 }

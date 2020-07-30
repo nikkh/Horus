@@ -14,6 +14,36 @@ if [ -z "$SQL_ALLOW_MY_IP" ]; then
     echo "Set environment variable SQL_ALLOW_MY_IP to your client IP Address to create a firewall rule"
 fi
 
+if [ -z "$PROCESSING_ENGINE_ASSEMBLY" ]; then 
+    echo "Set environment variable PROCESSING_ENGINE_ASSEMBLY to override the default of Horus.Functions"
+    export PROCESSING_ENGINE_ASSEMBLY=Horus.Functions
+fi
+
+if [ -z "$PROCESSING_ENGINE_TYPE" ]; then 
+    echo "Set environment variable PROCESSING_ENGINE_TYPE to override the default of Engines.HorusProcessingEngine"
+    export PROCESSING_ENGINE_TYPE=Engines.HorusProcessingEngine
+fi
+
+if [ -z "$PERSISTENCE_ENGINE_ASSEMBLY" ]; then 
+    echo "Set environment variable PERSISTENCE_ENGINE_ASSEMBLY to override the default of Horus.Functions"
+    export PERSISTENCE_ENGINE_ASSEMBLY=Horus.Functions
+fi
+
+if [ -z "$PERSISTENCE_ENGINE_TYPE" ]; then 
+    echo "Set environment variable PERSISTENCE_ENGINE_TYPE to override the default of Engines.CosmosPersistenceEngine"
+    export PERSISTENCE_ENGINE_TYPE=Engines.CosmosPersistenceEngine
+fi
+
+if [ -z "$INTEGRATION_ENGINE_ASSEMBLY" ]; then 
+    echo "Set environment variable INTEGRATION_ENGINE_ASSEMBLY to override the default of Horus.Functions"
+    export INTEGRATION_ENGINE_ASSEMBLY=Horus.Functions
+fi
+
+if [ -z "$INTEGRATION_ENGINE_TYPE" ]; then 
+    echo "Set environment variable INTEGRATION_ENGINE_TYPE to override the default of Engines.HorusIntegrationEngine"
+    export INTEGRATION_ENGINE_TYPE=Engines.HorusIntegrationEngine
+fi
+
 # Derive some meaningful names for resources to be created.
 applicationName=$APPLICATION_NAME
 storageSuffix=$RANDOM
@@ -31,7 +61,12 @@ frName="$applicationName-fr"
 adminLogin="$applicationName-admin"
 password="Boldmere$RANDOM@@@"
 location=$LOCATION
-
+processingEngineAssembly=$PROCESSING_ENGINE_ASSEMBLY
+processingEngineType=$PROCESSING_ENGINE_TYPE
+persistenceEngineAssembly=$PERSISTENCE_ENGINE_ASSEMBLY
+persistenceEngineType=$PERSISTENCE_ENGINE_TYPE
+integrationEngineAssembly=$INTEGRATION_ENGINE_ASSEMBLY
+integrationEngineType=$$INTEGRATION_ENGINE_TYPE
 # Play settings back and wait for confirmation
 echo "storageAccountName=$storageAccountName"
 echo "stagingStorageAccountName=$stagingStorageAccountName"
@@ -47,7 +82,12 @@ echo "frName=$frName"
 echo "adminLogin=$adminLogin"
 echo "password=$password"
 echo "location=$location"
-
+echo "processingEngineAssembly=$processingEngineAssembly"
+echo "processingEngineType=$processingEngineType"
+echo "persistenceEngineAssembly=$persistenceEngineAssembly"
+echo "persistenceEngineType=$persistenceEngineType"
+echo "integrationEngineAssembly=$integrationEngineAssembly"
+echo "integrationEngineType=$integrationEngineType"
 if [ "$SUPPRESS_CONFIRM" ]; then 
  echo "SUPPRESS_CONFIRM is set - confirmation is disabled"  
 else
@@ -126,5 +166,7 @@ echo "********************************"
 echo "Writing connections strings and secrets to $functionAppName configuration"
 
 # update Function App Settings
-az webapp config appsettings set -g $resourceGroupName -n $functionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString StagingStorageAccountConnectionString=$stagingStorageAccountConnectionString RecognizerApiKey=$recognizerApiKey IncomingDocumentServiceBusConnectionString=$serviceBusConnectionString IncomingDocumentsQueue=$docQueueName TrainingQueue=$trainingQueueName CosmosAuthorizationKey=$cosmosAuthorizationKey RecognizerServiceBaseUrl=$frEndpoint CosmosEndPointUrl=$cosmosEndpointUrl CosmosDatabaseId=HorusDb CosmosContainerId=ParsedDocuments "SQLConnectionString=$sqlConnectionString"
+az webapp config appsettings set -g $resourceGroupName -n $functionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString StagingStorageAccountConnectionString=$stagingStorageAccountConnectionString RecognizerApiKey=$recognizerApiKey IncomingDocumentServiceBusConnectionString=$serviceBusConnectionString IncomingDocumentsQueue=$docQueueName TrainingQueue=$trainingQueueName CosmosAuthorizationKey=$cosmosAuthorizationKey RecognizerServiceBaseUrl=$frEndpoint CosmosEndPointUrl=$cosmosEndpointUrl CosmosDatabaseId=HorusDb CosmosContainerId=ParsedDocuments ProcessingEngineAssembly=$processingEngineAssembly ProcessingEngineType=$processingEngineType PersistenceEngineAssembly=$ersistenceEngineAssembly PersistenceEngineType=$persistenceEngineType IntegrationEngineAssembly=$ersistenceEngineAssembly IntegrationEngineType=$persistenceEngineType "SQLConnectionString=$sqlConnectionString"
 echo -e "The random password generated for ${RED}$adminLogin${NC}, password was ${RED}$password${NC}"
+
+    

@@ -92,10 +92,10 @@ namespace Horus.Functions.Models
         }
 
         public decimal VatAmount { get; set; }
+        public decimal ShippingTotal { get; set; }
         public decimal NetTotal { get; set; }
         public decimal GrandTotal { get; set; }
         public string PostCode { get; set; }
-
         public string Thumbprint { get; set; }
         public string TaxPeriod { get; set; }
         public string ModelId { get; set; }

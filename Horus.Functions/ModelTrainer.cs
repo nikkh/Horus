@@ -84,10 +84,10 @@ namespace Horus.Functions
                 var snip = $"Orchestration { job.OrchestrationId}: { ec.FunctionName} -";
                 var orchestrationContainer = orchestrationBlobClient.GetContainerReference(job.OrchestrationContainerName);
                 await orchestrationContainer.CreateIfNotExistsAsync();
-                var jobBlobName = $"{job.DocumentFormat}{ParsingConstants.TrainingJobFileExtension}";
+                var jobBlobName = $"{job.DocumentFormat}{BaseConstants.TrainingJobFileExtension}";
                 var jobBlob = orchestrationContainer.GetBlockBlobReference(jobBlobName);
                 await jobBlob.UploadTextAsync(JsonConvert.SerializeObject(job));
-                var exceptionBlobName = $"{job.DocumentFormat}{ParsingConstants.ExceptionExtension}";
+                var exceptionBlobName = $"{job.DocumentFormat}{BaseConstants.ExceptionExtension}";
                 var exceptionBlob = orchestrationContainer.GetBlockBlobReference(exceptionBlobName);
                 await exceptionBlob.UploadTextAsync(JsonConvert.SerializeObject(job.Exception));
                 log.LogInformation($"{snip} - Exception Handled - Exception of Type {job.Exception.GetType()} added to blob {job.JobBlobName} was uploaded to container{job.OrchestrationContainerName}");
@@ -108,7 +108,7 @@ namespace Horus.Functions
             job.OrchestrationContainerName = orchestrationContainer.Name;
             await orchestrationContainer.CreateIfNotExistsAsync();
 
-            var uri = $"{recognizerServiceBaseUrl}{ParsingConstants.FormRecognizerApiPath}";
+            var uri = $"{recognizerServiceBaseUrl}{BaseConstants.FormRecognizerApiPath}";
 
             JObject body = new JObject(
                 new JProperty("source", job.BlobSasUrl),
@@ -126,7 +126,7 @@ namespace Horus.Functions
             log.LogTrace($"{snip} Training Request was prepared {job.BlobSasUrl}");
             using (var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"))
             {
-                client.DefaultRequestHeaders.Add(ParsingConstants.OcpApimSubscriptionKey, recognizerApiKey);
+                client.DefaultRequestHeaders.Add(BaseConstants.OcpApimSubscriptionKey, recognizerApiKey);
                 HttpResponseMessage response = await client.PostAsync(uri, content);
                 if (response.IsSuccessStatusCode)
                 {
@@ -231,7 +231,7 @@ namespace Horus.Functions
             job.ModelVersion = mtr.ModelVersion.ToString();
             var orchestrationContainer = orchestrationBlobClient.GetContainerReference(job.OrchestrationContainerName);
             await orchestrationContainer.CreateIfNotExistsAsync();
-            var jobBlobName = $"{job.DocumentFormat}{ParsingConstants.TrainingJobFileExtension}";
+            var jobBlobName = $"{job.DocumentFormat}{BaseConstants.TrainingJobFileExtension}";
             var jobBlob = orchestrationContainer.GetBlockBlobReference(jobBlobName);
             await jobBlob.UploadTextAsync(JsonConvert.SerializeObject(job));
             log.LogInformation($"{snip} - Completed successfully - Job blob {job.JobBlobName} was uploaded to container {job.OrchestrationContainerName}");

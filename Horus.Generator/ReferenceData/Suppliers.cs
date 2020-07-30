@@ -30,7 +30,7 @@ namespace Horus.Generator.ReferenceData
                 SupplierKey = "abc",
                 BuilderAssembly = "Horus.Generator",
                 BuilderType = "Builders.ABCDocumentBuilder",
-                MaxLines = 20
+                MaxLines = 18
             });
             suppliers.Add(3, new Supplier
             {

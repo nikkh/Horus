@@ -20,7 +20,7 @@ namespace Horus.Functions
     public class JobMonitor
     {
 
-        public JobMonitor(TelemetryConfiguration telemetryConfig) 
+        public JobMonitor() 
         {
             
         }
@@ -83,9 +83,9 @@ namespace Horus.Functions
                 return false;
             }
             string contentType= body["data"]["contentType"].ToString();
-            if (!ParsingConstants.AllowedContentTypes.Contains(contentType))
+            if (!BaseConstants.AllowedContentTypes.Contains(contentType))
             {
-                log.LogInformation($"Message {messageId} was ignored due to content type ({contentType}).  Valid content types are {string.Join(",", ParsingConstants.AllowedContentTypes.ToArray())}.");
+                log.LogInformation($"Message {messageId} was ignored due to content type ({contentType}).  Valid content types are {string.Join(",", BaseConstants.AllowedContentTypes.ToArray())}.");
                 return false;
             }
 

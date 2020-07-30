@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Horus.Functions.Data;
+using Horus.Functions.Engines;
 using Horus.Functions.Models;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -34,14 +35,15 @@ namespace Horus.Functions
         private static readonly CloudBlobClient stagingBlobClient = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("StagingStorageAccountConnectionString")).CreateCloudBlobClient();
         private static readonly CloudBlobClient orchestrationBlobClient = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("OrchestrationStorageAccountConnectionString")).CreateCloudBlobClient();
         private static readonly HttpClient client = new HttpClient();
-        private static readonly string endpoint = Environment.GetEnvironmentVariable("CosmosEndPointUrl");
-        private static readonly string authKey = Environment.GetEnvironmentVariable("CosmosAuthorizationKey");
-        private static readonly CosmosClient cosmosClient = new CosmosClient(endpoint, authKey);
-        private static readonly string cosmosDatabaseId = Environment.GetEnvironmentVariable("CosmosDatabaseId");
-        private static readonly string cosmosContainerId = Environment.GetEnvironmentVariable("CosmosContainerId");
+        
         private static readonly string recognizerApiKey = Environment.GetEnvironmentVariable("RecognizerApiKey");
         private static readonly string recognizerServiceBaseUrl = Environment.GetEnvironmentVariable("RecognizerServiceBaseUrl");
-
+        private static readonly string processingEngineAssembly = Environment.GetEnvironmentVariable("ProcessingEngineAssembly");
+        private static readonly string processingEngineType = Environment.GetEnvironmentVariable("ProcessingEngineType");
+        private static readonly string persistenceEngineAssembly = Environment.GetEnvironmentVariable("PersistenceEngineAssembly");
+        private static readonly string persistenceEngineType = Environment.GetEnvironmentVariable("PersistenceEngineType");
+        private static readonly string integrationEngineAssembly = Environment.GetEnvironmentVariable("IntegrationEngineAssembly");
+        private static readonly string integrationEngineType = Environment.GetEnvironmentVariable("IntegrationEngineType");
 
         private readonly IConfiguration config;
         private readonly TelemetryClient telemetryClient;
@@ -93,8 +95,9 @@ namespace Horus.Functions
                     await context.CreateTimer(nextCheck, CancellationToken.None);
                 }
                 job = await context.CallActivityAsync<DocumentProcessingJob>("Processor", job);
-                job = await context.CallActivityAsync<DocumentProcessingJob>("CosmosWriter", job);
-                job = await context.CallActivityAsync<DocumentProcessingJob>("Finisher", job);
+                job = await context.CallActivityAsync<DocumentProcessingJob>("Persistor", job);
+                job = await context.CallActivityAsync<DocumentProcessingJob>("Integrator", job);
+                job = await context.CallActivityAsync<DocumentProcessingJob>("Finalizer", job);
             }
             catch(Exception ex)
             {
@@ -116,10 +119,10 @@ namespace Horus.Functions
                 var snip = $"Orchestration { job.OrchestrationId}: { ec.FunctionName} -";
                 var orchestrationContainer = orchestrationBlobClient.GetContainerReference(job.OrchestrationContainerName);
                 await orchestrationContainer.CreateIfNotExistsAsync();
-                var jobBlobName = $"{job.DocumentFormat}{ParsingConstants.TrainingJobFileExtension}";
+                var jobBlobName = $"{job.DocumentFormat}{BaseConstants.TrainingJobFileExtension}";
                 var jobBlob = orchestrationContainer.GetBlockBlobReference(jobBlobName);
                 await jobBlob.UploadTextAsync(JsonConvert.SerializeObject(job));
-                var exceptionBlobName = $"{job.DocumentFormat}{ParsingConstants.ExceptionExtension}";
+                var exceptionBlobName = $"{job.DocumentFormat}{BaseConstants.ExceptionExtension}";
                 var exceptionBlob = orchestrationContainer.GetBlockBlobReference(exceptionBlobName);
                 await exceptionBlob.UploadTextAsync(JsonConvert.SerializeObject(job.Exception));
                 log.LogInformation($"{snip} - Exception Handled - Exception of Type {job.Exception.GetType()} added to blob {job.JobBlobName} was uploaded to container{job.OrchestrationContainerName}");
@@ -201,7 +204,7 @@ namespace Horus.Functions
 
             var queryString = HttpUtility.ParseQueryString(string.Empty);
             queryString["includeTextDetails"] = "True";
-            var uri = $"{recognizerServiceBaseUrl}{ParsingConstants.FormRecognizerApiPath}/{model.ModelId}/{ParsingConstants.FormRecognizerAnalyzeVerb}?{queryString}";
+            var uri = $"{recognizerServiceBaseUrl}{BaseConstants.FormRecognizerApiPath}/{model.ModelId}/{BaseConstants.FormRecognizerAnalyzeVerb}?{queryString}";
             log.LogTrace($"{snip} Recognizer Uri={uri}");
 
             HttpResponseMessage response;
@@ -290,7 +293,7 @@ namespace Horus.Functions
         {
             var snip = $"Orchestration { job.OrchestrationId}: { ec.FunctionName} -";
             var orchestrationContainer = orchestrationBlobClient.GetContainerReference(job.OrchestrationContainerName);
-            var recognizedBlobName = $"{job.OrchestrationBlobName}{ParsingConstants.RecognizedExtension}";
+            var recognizedBlobName = $"{job.OrchestrationBlobName}{BaseConstants.RecognizedExtension}";
             job.RecognizedBlobName = recognizedBlobName;
             var recognizedBlob = orchestrationContainer.GetBlockBlobReference(recognizedBlobName);
             await recognizedBlob.UploadTextAsync(job.RecognizerResponse);
@@ -304,81 +307,14 @@ namespace Horus.Functions
         public async Task<DocumentProcessingJob> Processor([ActivityTrigger] DocumentProcessingJob job, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext ec)
         {
             var snip = $"Orchestration { job.OrchestrationId}: { ec.FunctionName} -";
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            Document document = new Document { FileName = job.JobBlobName };
-            document.UniqueRunIdentifier = job.OrchestrationId;
-            document.FileName = job.OrchestrationBlobName;
-            JObject jsonContent = JObject.Parse(job.RecognizerResponse);
-            if (jsonContent["status"] != null) document.RecognizerStatus = jsonContent["status"].ToString();
-            if (jsonContent["errors"] != null) document.RecognizerErrors = jsonContent["errors"].ToString();
-
-            // Fill out the document object
-            var nittyGritty = (JObject)jsonContent["analyzeResult"]["documentResults"][0]["fields"];
-            document.ShreddingUtcDateTime = DateTime.Now;
-            document.OrderNumber = ParsingHelpers.GetString(ParsingConstants.OrderNumber, nittyGritty, document);
-            document.OrderDate = ParsingHelpers.GetDate(ParsingConstants.OrderDate, nittyGritty, document);
-            document.TaxDate = ParsingHelpers.GetDate(ParsingConstants.TaxDate, nittyGritty, document);
-            document.DocumentNumber = ParsingHelpers.GetString(ParsingConstants.InvoiceNumber, nittyGritty, document);
-            document.Account = ParsingHelpers.GetString(ParsingConstants.Account, nittyGritty, document);
-            document.NetTotal = ParsingHelpers.GetNumber(ParsingConstants.NetTotal, nittyGritty, document) ?? 0;
-            document.VatAmount = ParsingHelpers.GetNumber(ParsingConstants.VatAmount, nittyGritty, document) ?? 0;
-            document.GrandTotal = ParsingHelpers.GetNumber(ParsingConstants.GrandTotal, nittyGritty, document) ?? 0;
-            document.PostCode = ParsingHelpers.GetString(ParsingConstants.PostCode, nittyGritty, document);
-            document.TimeToShred = 0; // Set after processing complete
-            document.Thumbprint = job.Thumbprint;
-            document.ModelId = job.Model.ModelId;
-            document.ModelVersion = job.Model.ModelVersion.ToString(); ;
-            if (document.TaxDate != null && document.TaxDate.HasValue)
-            {
-                document.TaxPeriod = document.TaxDate.Value.Year.ToString() + document.TaxDate.Value.Month.ToString();
-            }
-
-            // Lines
-
-            for (int i = 1; i < ParsingConstants.MAX_DOCUMENT_LINES; i++)
-            {
-                var lineNumber = i.ToString("D2");
-                string lineItemId = $"{ParsingConstants.LineItemPrefix}{lineNumber}";
-                string unitPriceId = $"{ParsingConstants.UnitPricePrefix}{lineNumber}";
-                string quantityId = $"{ParsingConstants.QuantityPrefix}{lineNumber}";
-                string netPriceId = $"{ParsingConstants.NetPricePrefix}{lineNumber}";
-                string vatCodeId = $"{ParsingConstants.VatCodePrefix}{lineNumber}";
-
-                // presence of any one of the following items will mean the document line is considered to exist.
-                string[] elements = { unitPriceId, netPriceId, lineItemId };
-
-                if (ParsingHelpers.AnyElementsPresentForThisLine(nittyGritty, lineNumber, elements))
-                {
-                    log.LogTrace($"{snip}{lineItemId}: {ParsingHelpers.GetString(lineItemId, nittyGritty, document)}");
-                    DocumentLineItem lineItem = new DocumentLineItem();
-
-                    // aid debug
-                    string test = nittyGritty.ToString();
-                    //
-                    lineItem.ItemDescription = ParsingHelpers.GetString(lineItemId, nittyGritty, document, DocumentErrorSeverity.Terminal);
-                    lineItem.DocumentLineNumber = lineNumber;
-                    lineItem.LineQuantity = ParsingHelpers.GetNumber(quantityId, nittyGritty, document).ToString();
-                    lineItem.NetAmount = ParsingHelpers.GetNumber(netPriceId, nittyGritty, document, DocumentErrorSeverity.Terminal) ?? 0;
-                    lineItem.UnitPrice = ParsingHelpers.GetNumber(unitPriceId, nittyGritty, document, DocumentErrorSeverity.Terminal) ?? 0;
-                    lineItem.VATCode = ParsingHelpers.GetString(vatCodeId, nittyGritty, document, DocumentErrorSeverity.Warning);
-
-                    document.LineItems.Add(lineItem);
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            timer.Stop();
-            document.TimeToShred = timer.ElapsedMilliseconds;
-            string documentForOutput = "********";
+            var engine = (IProcessingEngine) EngineFactory.GetEngine(processingEngineAssembly, processingEngineType);
+            log.LogDebug($"{snip} Processing engine: {engine.GetType()}");
+            var document = engine.Process(job, log, snip);
+              string documentForOutput = "********";
             if (!string.IsNullOrEmpty(document.DocumentNumber)) documentForOutput = document.DocumentNumber;
             log.LogDebug($"Orchestration {job.OrchestrationId}: {ec.FunctionName} - Document {documentForOutput} was parsed form recognizer output in {document.TimeToShred} ms");
-            
             var orchestrationContainer = orchestrationBlobClient.GetContainerReference(job.OrchestrationContainerName);
-            var documentBlobName = $"{job.OrchestrationBlobName}{ParsingConstants.DocumentExtension}";
+            var documentBlobName = $"{job.OrchestrationBlobName}{BaseConstants.DocumentExtension}";
             job.DocumentName = documentBlobName;
             var documentBlob = orchestrationContainer.GetBlockBlobReference(documentBlobName);
             await documentBlob.UploadTextAsync(JsonConvert.SerializeObject(document));
@@ -388,48 +324,44 @@ namespace Horus.Functions
         }
         #endregion
 
-        #region Persistance
-        [FunctionName("CosmosWriter")]
-        public async Task<DocumentProcessingJob> CosmosWriter([ActivityTrigger] DocumentProcessingJob job, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext ec)
+        
+        [FunctionName("Persistor")]
+        public async Task<DocumentProcessingJob> Persistor([ActivityTrigger] DocumentProcessingJob job, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext ec)
         {
             var snip = $"Orchestration { job.OrchestrationId}: { ec.FunctionName} - ";
-            var documentBlob = await orchestrationBlobClient.GetBlobReferenceFromServerAsync(new Uri(job.DocumentBlobUrl));
-            string documentBlobContents;
-            using (var memoryStream = new MemoryStream())
-            {
-                await documentBlob.DownloadToStreamAsync(memoryStream);
-                documentBlobContents = System.Text.Encoding.UTF8.GetString(memoryStream.ToArray());
-            }
-
-            var document = JsonConvert.DeserializeObject<Document>(documentBlobContents);
-            Database database = await cosmosClient.CreateDatabaseIfNotExistsAsync(cosmosDatabaseId);
-            ContainerProperties containerProperties = new ContainerProperties(cosmosContainerId, partitionKeyPath: "/Account");
-            Container container = await database.CreateContainerIfNotExistsAsync(
-                containerProperties,
-                throughput: 400);
-            _ = await container.CreateItemAsync(document, new PartitionKey(document.Account),
-            new ItemRequestOptions()
-            {
-                EnableContentResponseOnWrite = false
-            });
-            log.LogDebug($"{snip} document {document.DocumentNumber} was saved to Cosmos - database={cosmosDatabaseId}, container={cosmosContainerId})");
+            var engine = (IPersistenceEngine) EngineFactory.GetEngine(persistenceEngineAssembly, persistenceEngineType);
+            log.LogDebug($"{snip} Persistence engine: {engine.GetType()}");
+            await engine.Save(job, log, snip);
             log.LogInformation($"{snip} - Completed successfully");
             return job;
         }
 
-        [FunctionName("Finisher")]
-        public async Task<DocumentProcessingJob> Finisher([ActivityTrigger] DocumentProcessingJob job, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext ec)
+
+        [FunctionName("Integrator")]
+        public async Task<DocumentProcessingJob> Integrator([ActivityTrigger] DocumentProcessingJob job, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext ec)
+        {
+            var snip = $"Orchestration { job.OrchestrationId}: { ec.FunctionName} - ";
+            var engine = (IIntegrationEngine)EngineFactory.GetEngine(integrationEngineAssembly, integrationEngineType);
+            log.LogDebug($"{snip} Integration engine: {engine.GetType()}");
+            var retval = await engine.Integrate(job, log, snip);
+            log.LogTrace(retval.ToString());
+            log.LogInformation($"{snip} - Completed successfully");
+            return job;
+        }
+
+        [FunctionName("Finalizer")]
+        public async Task<DocumentProcessingJob> Finalizer([ActivityTrigger] DocumentProcessingJob job, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext ec)
         {
             var snip = $"Orchestration { job.OrchestrationId}: { ec.FunctionName} - ";
             var orchestrationContainer = orchestrationBlobClient.GetContainerReference(job.OrchestrationContainerName);
-            var jobBlobName = $"{job.OrchestrationBlobName}{ParsingConstants.ProcessingJobFileExtension}";
+            var jobBlobName = $"{job.OrchestrationBlobName}{BaseConstants.ProcessingJobFileExtension}";
             job.JobBlobName = jobBlobName;
             var jobBlob = orchestrationContainer.GetBlockBlobReference(jobBlobName);
             await jobBlob.UploadTextAsync(JsonConvert.SerializeObject(job));
             log.LogInformation($"{snip} Completed successfully");
             return job;
         }
-        #endregion
+       
 
         #region not used
         [FunctionName("Duracell_HttpStart")]

@@ -4,6 +4,7 @@
     "logLevel": {
       "Host.Triggers.DurableTask": "Warning",
       "Host.Results": "Warning",
+      "Host.Executor": "Warning",
       "Function": "Trace",
       "Function.StartPreprocessor": "Trace",
       "Function.CheckPreprocessorStatus": "Trace",

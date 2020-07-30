@@ -47,7 +47,7 @@ namespace Horus.Functions.Data
                     "CREATE TABLE[dbo].[Document]([Id][int] IDENTITY(1, 1) NOT NULL, [DocumentNumber] [nvarchar](50) NOT NULL, [TaxDate] [datetime2](7) NULL, [OrderNumber] [nvarchar](50) NULL," +
                         "[OrderDate] [datetime2](7) NULL, [FileName] [nvarchar](50) NULL, [ShreddingUtcDateTime] [datetime2](7) NOT NULL, [TimeToShred] [bigint] NOT NULL, [RecognizerStatus] [nvarchar](50) NULL," +
                         "[RecognizerErrors] [nvarchar](50) NULL, [UniqueRunIdentifier] [nvarchar](50) NOT NULL, [TerminalErrorCount] [int] NOT NULL, [WarningErrorCount] [int] NOT NULL, [IsValid] [bit] NOT NULL," +
-                        "[Account] [nvarchar](50) NULL,	[VatAmount] [decimal](19, 5) NULL,	[NetTotal] [decimal](19, 5) NULL, [GrandTotal] [decimal](19, 5) NULL, [PostCode] [nvarchar](10) NULL, [Thumbprint] [nvarchar](50) NULL," +
+                        "[Account] [nvarchar](50) NULL,	[VatAmount] [decimal](19, 5) NULL,	[ShippingTotal] [decimal](19, 5) NULL, [NetTotal] [decimal](19, 5) NULL, [GrandTotal] [decimal](19, 5) NULL, [PostCode] [nvarchar](10) NULL, [Thumbprint] [nvarchar](50) NULL," +
                         "[TaxPeriod] [nvarchar](6) NULL, [ModelId] [nvarchar](50) NULL, [ModelVersion] [nvarchar](50) NULL," +
                         "PRIMARY KEY CLUSTERED ([Id] ASC)WITH(STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON[PRIMARY]) ON[PRIMARY]";
                 command.CommandText = commandStr;
@@ -63,7 +63,7 @@ namespace Horus.Functions.Data
 
                 commandStr = "If not exists (select name from sysobjects where name = 'DocumentLineItem')" +
                   "CREATE TABLE[dbo].[DocumentLineItem]([Id][int] IDENTITY(1, 1) NOT NULL, [DocumentId] [int] NOT NULL, [DocumentLineNumber] [nvarchar](5) NOT NULL, [ItemDescription] [nvarchar](max)NULL, [LineQuantity] [nvarchar](50) NULL," +
-                    "[UnitPrice] [decimal](19, 5) NULL, [VATCode] [nvarchar](50) NULL, [NetAmount] [decimal](19, 5) NULL, [CalculatedLineQuantity] [decimal](18, 0) NULL," +
+                    "[UnitPrice] [decimal](19, 5) NULL, [VATCode] [nvarchar](50) NULL, [NetAmount] [decimal](19, 5) NULL, [CalculatedLineQuantity] [decimal](18, 0) NULL, [TaxableIndicator] [nvarchar](1) NULL, [DiscountPercent] [decimal](9,5) NULL" +
                     "PRIMARY KEY CLUSTERED ([Id] ASC)WITH(STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON[PRIMARY]) ON[PRIMARY] TEXTIMAGE_ON[PRIMARY]";
                 command.CommandText = commandStr;
                 command.ExecuteNonQuery();
@@ -181,6 +181,90 @@ namespace Horus.Functions.Data
                 ModelTrainingRecord mtr = new ModelTrainingRecord { ModelId = m.ModelId, ModelVersion = newVersion, AverageModelAccuracy = m.AverageModelAccuracy, DocumentFormat = m.DocumentFormat, UpdatedDateTime = m.UpdatedDateTime };
                 log.LogInformation($"Training request for document format {m.DocumentFormat}, version={newVersion}, model id={m.ModelId}  was written to the database");
                 return mtr;
+            }
+        }
+
+        public static void SaveDocument(Document document, ILogger log)
+        {
+            using (SqlConnection connection = new SqlConnection(sqlConnectionString))
+            {
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                SqlTransaction transaction;
+                transaction = connection.BeginTransaction("PlaceboTransaction");
+                command.Connection = connection;
+                command.Transaction = transaction;
+
+                try
+                {
+                    // Add the document 
+                    string insertClause = $"Insert into Document (DocumentNumber, OrderNumber, FileName, ShreddingUtcDateTime, TimeToShred, RecognizerStatus, RecognizerErrors, UniqueRunIdentifier, TerminalErrorCount, WarningErrorCount, IsValid, Account, VatAmount, ShippingTotal, NetTotal, GrandTotal, PostCode, Thumbprint, TaxPeriod, ModelId, ModelVersion";
+                    string valuesClause = $" VALUES ('{document.DocumentNumber}', '{document.OrderNumber}','{document.FileName}', '{document.ShreddingUtcDateTime.ToString("yyyy-MM-dd HH:mm:ss.fff")}', '{document.TimeToShred}', '{document.RecognizerStatus}', '{document.RecognizerErrors}','{document.UniqueRunIdentifier}', '{document.TerminalErrorCount}','{document.WarningErrorCount}', '{document.IsValid}', '{document.Account}', '{document.VatAmount}', '{document.ShippingTotal}', '{document.NetTotal}', '{document.GrandTotal}', '{document.PostCode}', '{document.Thumbprint}','{document.TaxPeriod}','{document.ModelId}','{document.ModelVersion}'";
+                    if (document.TaxDate != null)
+                    {
+                        DateTime taxDate = (DateTime)document.TaxDate;
+                        insertClause += ", TaxDate";
+                        valuesClause += $", '{taxDate.ToString("yyyy-MM-dd HH:mm:ss.fff")}'";
+                    }
+                    if (document.OrderDate != null)
+                    {
+                        DateTime orderDate = (DateTime)document.OrderDate;
+                        insertClause += ", OrderDate";
+                        valuesClause += $", '{orderDate.ToString("yyyy-MM-dd HH:mm:ss.fff")}'";
+                    }
+                    insertClause += ") ";
+                    valuesClause += ")";
+                    command.CommandText = insertClause + valuesClause;
+
+
+                    command.ExecuteNonQuery();
+                    int currentIdentity = 0;
+                    command.CommandText = "SELECT IDENT_CURRENT('[dbo].[Document]') AS Current_Identity";
+                    SqlDataReader reader = command.ExecuteReader();
+                    try
+                    {
+                        while (reader.Read())
+                        {
+                            currentIdentity = Convert.ToInt32(reader["Current_Identity"]);
+                        }
+
+                    }
+                    finally
+                    {
+                        reader.Close();
+                    }
+
+                    // Add the lines
+                    foreach (var line in document.LineItems)
+                    {
+                        string safeDescription = null;
+                        // ensure no single quotes in drug description
+                        if (line.ItemDescription != null)
+                        { safeDescription = line.ItemDescription.Replace("'", BaseConstants.IllegalCharacterMarker); }
+                        command.CommandText =
+                        $"Insert into DocumentLineItem (DocumentId, ItemDescription, LineQuantity, UnitPrice, VATCode, NetAmount, CalculatedLineQuantity, DocumentLineNumber, TaxableIndicator, DiscountPercent) " +
+                        $"VALUES ('{currentIdentity}', '{safeDescription}', '{line.LineQuantity}','{line.UnitPrice}', '{line.VATCode}','{line.NetAmount}','{line.CalculatedLineQuantity}', '{line.DocumentLineNumber}', '{line.Taxableindicator}', '{line.DiscountPercent}')";
+                        command.ExecuteNonQuery();
+                    }
+
+                    // Add the Errors
+                    foreach (var error in document.Errors)
+                    {
+                        command.CommandText =
+                        $"Insert into DocumentError (DocumentId, ErrorCode, ErrorSeverity, ErrorMessage) " +
+                        $"VALUES ('{currentIdentity}', '{error.ErrorCode}', '{error.ErrorSeverity}','{error.ErrorMessage}' )";
+                        command.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    log.LogError($"Exception prevented writing Document {document.DocumentNumber} to database (transaction was rolled back).  Message is {e.Message}");
+                    transaction.Rollback();
+                    throw e;
+                }
+                log.LogInformation($"Document {document.DocumentNumber} was written to SQL database {connection.Database}");
             }
         }
     }
