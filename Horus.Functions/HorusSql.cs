@@ -84,6 +84,28 @@ namespace Horus.Functions.Data
             }
         }
 
+        public static int GetDocumentCount(ILogger log)
+        {
+            using (SqlConnection connection = new SqlConnection(sqlConnectionString))
+            {
+                int rowCount = 0;
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                command.Connection = connection;
+                try
+                {
+                    command.CommandText = $"SELECT count(*) FROM document";
+                    rowCount = (int)command.ExecuteScalar();                
+                }
+                catch (Exception e)
+                {
+                    log.LogError($"Exception while counting number of processed documents.  Message is {e.Message}");
+                    throw e;
+                }
+                return rowCount;
+            }
+        }
+
         public static ModelTrainingRecord GetModelIdByDocumentFormat(string documentFormat)
         {
             var mt = new ModelTrainingRecord();
@@ -191,15 +213,19 @@ namespace Horus.Functions.Data
                 connection.Open();
                 SqlCommand command = connection.CreateCommand();
                 SqlTransaction transaction;
-                transaction = connection.BeginTransaction("PlaceboTransaction");
+                transaction = connection.BeginTransaction("DocumentTransaction");
                 command.Connection = connection;
                 command.Transaction = transaction;
-
+                string safePostCode= document.PostCode;
                 try
                 {
+                    if (document.PostCode.Length > 10) 
+                    {
+                        safePostCode = document.PostCode.Substring(0, 10);
+                    }
                     // Add the document 
                     string insertClause = $"Insert into Document (DocumentNumber, OrderNumber, FileName, ShreddingUtcDateTime, TimeToShred, RecognizerStatus, RecognizerErrors, UniqueRunIdentifier, TerminalErrorCount, WarningErrorCount, IsValid, Account, VatAmount, ShippingTotal, NetTotal, GrandTotal, PostCode, Thumbprint, TaxPeriod, ModelId, ModelVersion";
-                    string valuesClause = $" VALUES ('{document.DocumentNumber}', '{document.OrderNumber}','{document.FileName}', '{document.ShreddingUtcDateTime.ToString("yyyy-MM-dd HH:mm:ss.fff")}', '{document.TimeToShred}', '{document.RecognizerStatus}', '{document.RecognizerErrors}','{document.UniqueRunIdentifier}', '{document.TerminalErrorCount}','{document.WarningErrorCount}', '{document.IsValid}', '{document.Account}', '{document.VatAmount}', '{document.ShippingTotal}', '{document.NetTotal}', '{document.GrandTotal}', '{document.PostCode}', '{document.Thumbprint}','{document.TaxPeriod}','{document.ModelId}','{document.ModelVersion}'";
+                    string valuesClause = $" VALUES ('{document.DocumentNumber}', '{document.OrderNumber}','{document.FileName}', '{document.ShreddingUtcDateTime.ToString("yyyy-MM-dd HH:mm:ss.fff")}', '{document.TimeToShred}', '{document.RecognizerStatus}', '{document.RecognizerErrors}','{document.UniqueRunIdentifier}', '{document.TerminalErrorCount}','{document.WarningErrorCount}', '{document.IsValid}', '{document.Account}', '{document.VatAmount}', '{document.ShippingTotal}', '{document.NetTotal}', '{document.GrandTotal}', '{safePostCode}', '{document.Thumbprint}','{document.TaxPeriod}','{document.ModelId}','{document.ModelVersion}'";
                     if (document.TaxDate != null)
                     {
                         DateTime taxDate = (DateTime)document.TaxDate;
@@ -265,6 +291,114 @@ namespace Horus.Functions.Data
                     throw e;
                 }
                 log.LogInformation($"Document {document.DocumentNumber} was written to SQL database {connection.Database}");
+            }
+        }
+
+        public static Document LoadDocument(string fileName, ILogger log)
+        {
+            Document document=null;
+            using (SqlConnection connection = new SqlConnection(sqlConnectionString))
+            {
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                command.Connection = connection;
+                try
+                {
+                    int documentId = 0;
+                    command.CommandText = $"select * from Document where FileName = '{fileName}' order by ShreddingUtcDateTime desc";
+                    SqlDataReader reader = command.ExecuteReader();
+                    try
+                    {
+                        while (reader.Read())
+                        {
+                            documentId = (int)reader["Id"];
+                            log.LogDebug($"Account={(string)reader["Account"]}");
+
+
+
+                            document = new Document 
+                            {
+                               
+                                Account = (string)reader["Account"],
+                                DocumentNumber = (string)reader["DocumentNumber"],
+                                TaxDate = (DateTime)reader["TaxDate"],
+                                FileName = (string)reader["FileName"],
+                                GrandTotal = (decimal)reader["GrandTotal"], 
+                                NetTotal = (decimal)reader["NetTotal"], 
+                                PostCode = (string)reader["PostCode"], 
+                                ShippingTotal = (decimal)reader["ShippingTotal"],  
+                                VatAmount = (decimal)reader["VatAmount"], 
+                                TaxPeriod = (string)reader["TaxPeriod"]
+                            };
+
+                            try 
+                            {
+                                document.OrderDate = (DateTime)reader["OrderDate"];
+                            }
+                            catch (Exception)
+                            { 
+                            }
+                            try
+                            {
+                                document.OrderNumber = (string)reader["OrderNumber"];
+                            }
+                            catch (Exception)
+                            {
+                            }
+                           
+
+                            break;
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        log.LogError($"Exception prevented reading Document {document.DocumentNumber} from SQL database {connection.Database}.  Message is {e.Message}");
+                        throw e;
+                    }
+                    finally
+                    {
+                        reader.Close();
+                    }
+
+                    if (document == null)
+                    {
+                        log.LogInformation($"Requested document {fileName} not found in database");
+                        return null;
+                    }
+
+                    command.CommandText = $"select * from DocumentLineItem where DocumentId = '{documentId}' order by DocumentLineNumber";
+                    reader = command.ExecuteReader();
+                    try
+                    {
+                        while (reader.Read())
+                        {
+                            var lineItem = new DocumentLineItem 
+                            {
+                                DiscountPercent = (decimal)reader["DiscountPercent"],
+                                DocumentLineNumber = (string)reader["DocumentLineNumber"],
+                                ItemDescription = (string)reader["ItemDescription"],
+                                LineQuantity = (string)reader["LineQuantity"],
+                                VATCode = (string)reader["VATCode"], 
+                                NetAmount = (decimal)reader["NetAmount"],
+                                Taxableindicator = (string)reader["Taxableindicator"], 
+                                UnitPrice = (decimal)reader["UnitPrice"],
+                            };
+                            document.LineItems.Add(lineItem);
+                        }
+                    }
+                    finally
+                    {
+                        reader.Close();
+                    }
+                }
+                catch (Exception e)
+                {
+                    log.LogError($"Exception prevented reading Document Lines for document {document.DocumentNumber} from SQL database {connection.Database}.  Message is {e.Message}");
+                    throw e;
+                }
+                log.LogInformation($"Document {document.DocumentNumber} was read from SQL database {connection.Database}");
+                return document;
             }
         }
     }

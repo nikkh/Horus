@@ -109,7 +109,8 @@ namespace Horus.Generator.Builders
             paragraph.Style = "Reference";
             paragraph.AddFormattedText($"{header.DocumentType} {generatorDocument.DocumentNumber}", TextFormat.Bold);
             paragraph.AddTab();
-            paragraph.AddText(generatorDocument.DocumentDate);
+            var temp = (DateTime)generatorDocument.DocumentDate;
+            paragraph.AddText(temp.ToString("dd/MM/yyyy"));
             // paragraph.AddDateField("dd.MM.yyyy");
 
             // Create the item table

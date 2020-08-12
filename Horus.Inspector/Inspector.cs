@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Globalization;
 using Horus.Functions.Data;
+using System.Data.SqlClient;
+using Horus.Functions.Models;
 
 namespace Horus.Inspector
 {
@@ -17,7 +19,9 @@ namespace Horus.Inspector
         private readonly ILogger log;
         private readonly List<ScoreRecord> records;
         private static readonly CloudBlobClient trainingBlobClient = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("TrainingStorageAccountConnectionString")).CreateCloudBlobClient();
-
+        static readonly CloudBlobClient orchestrationBlobClient = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("OrchestrationStorageAccountConnectionString")).CreateCloudBlobClient();
+        public static readonly string sqlConnectionString = Environment.GetEnvironmentVariable("GeneratorSQLConnectionString");
+        public static readonly string teamName = Environment.GetEnvironmentVariable("TeamName");
         public Inspector(ILogger log)
         {
             this.log = log;
@@ -29,8 +33,191 @@ namespace Horus.Inspector
         {
             records.AddRange(await InspectTrainingStorage());
             records.AddRange(await InspectModelRegistration());
+            records.AddRange(await InspectProcessingOrchestrations());
+            records.AddRange(await CountProcessedDocuments(log));
+            records.AddRange(await CheckIndividualDocuments(log));
+            UpdateDatabase(records);
             return records;
 
+        }
+
+        private void UpdateDatabase(List<ScoreRecord> records)
+        {
+            using (SqlConnection connection = new SqlConnection(sqlConnectionString))
+            {
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                SqlTransaction transaction;
+                transaction = connection.BeginTransaction("ScoresTransaction");
+                command.Connection = connection;
+                command.Transaction = transaction;
+                var inspectionTime = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                try
+                {
+                    // Set previous score detail records to inactive
+                    command.CommandText = $"UPDATE ScoreDetail SET Status = 'PREVIOUS' WHERE Team = '{teamName}' AND Status = 'CURRENT'";
+                    command.ExecuteNonQuery();
+
+                    // write new detail records
+                    foreach (var record in records)
+                    {
+                        command.CommandText = $"INSERT INTO ScoreDetail (Team, InspectionTime, Type, Notes, Score, Status) " +
+                            $"VALUES('{teamName}','{inspectionTime}','{record.Type}','{record.Notes}','{record.Score}','CURRENT')";
+                        command.ExecuteNonQuery();
+                    }
+
+                    // delete existing summary
+                    command.CommandText = $"DELETE FROM ScoreSummary WHERE Team = '{teamName}'";
+                    command.ExecuteNonQuery();
+
+                    // create new summary
+                    command.CommandText = $"INSERT INTO ScoreSummary (Team, TotalScore, InspectionTime) VALUES ('{teamName}', '{records.Sum(s => s.Score)}', '{inspectionTime}')";
+                    command.ExecuteNonQuery();
+                    transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    log.LogError($"Exception prevented writing inspection scores for team {teamName} to database {connection.Database} (transaction was rolled back).  Message is {e.Message}");
+                    transaction.Rollback();
+                    throw e;
+                }
+                log.LogInformation($"scores for team {teamName} were written to database {connection.Database}");
+            }
+        }
+
+        private async Task<List<ScoreRecord>> CheckIndividualDocuments(ILogger log)
+        {
+            var results = new List<ScoreRecord>();
+            var checks = new List<DocumentCheckRequest>();
+            using (SqlConnection connection = new SqlConnection(sqlConnectionString))
+            {
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                command.Connection = connection;
+                try
+                {
+                    string previousDocumentFormat = "";
+                    string previousDocumentNumber = "";
+
+                    command.CommandText = "SELECT * FROM [dbo].[GeneratedDocuments] order by DocumentFormat, DocumentNumber, LineNumber";
+                    SqlDataReader reader = command.ExecuteReader();
+                    try
+                    {
+                        DocumentCheckRequest checkRequest = null;
+                        while (reader.Read())
+                        {
+                            bool newDocument = false;
+                            string currentDocumentFormat = (string)reader["DocumentFormat"];
+                            string currentDocumentNumber = (string)reader["DocumentNumber"];
+                            
+                            if (currentDocumentFormat != previousDocumentFormat)
+                            {
+                                newDocument = true;
+                                previousDocumentFormat = currentDocumentFormat;
+                            }
+                            if (currentDocumentNumber != previousDocumentNumber)
+                            {
+                                newDocument = true;
+                                previousDocumentNumber = currentDocumentNumber;
+                            }
+
+                            if (newDocument)
+                            {
+                                if (checkRequest != null) checks.Add(checkRequest);
+                                checkRequest = new DocumentCheckRequest
+                                {
+                                    Account = (string)reader["Account"],
+                                    DocumentNumber = (string)reader["DocumentNumber"],
+                                    DocumentDate = (DateTime) reader["DocumentDate"],
+                                    PostalCode = (string)reader["PostalCode"],
+                                    GrandTotalValue = Convert.ToDouble(reader["GrandTotalValue"]),
+                                    PreTaxTotalValue = Convert.ToDouble(reader["PreTaxTotalValue"]),
+                                    ShippingTotalValue = Convert.ToDouble(reader["ShippingTotalValue"]),
+                                    TaxTotalValue = Convert.ToDouble(reader["TaxTotalValue"]),
+                                    FileName = (string)reader["FileName"],
+                                    DocumentFormat = (string)reader["DocumentFormat"],
+                                };
+                            }
+
+                            var line = new DocumentLineCheckRequest
+                            {
+                                Discount = Convert.ToDouble(reader["Discount"]),
+                                LineNumber = (string)reader["LineNumber"],
+                                ProductCode = (string)reader["Isbn"],
+                                ProductDescription = (string)reader["Title"],
+                                Price = Convert.ToDouble(reader["Price"]),
+                                Quantity = Convert.ToDouble(reader["Quantity"]),
+                                Taxable = (bool)reader["Taxable"],
+                                DiscountedGoodsValue = Convert.ToDouble(reader["DiscountedGoodsValue"]),
+                                DiscountValue = Convert.ToDouble(reader["DiscountValue"]),
+                                GoodsValue = Convert.ToDouble(reader["GoodsValue"]),
+                                TaxableValue = Convert.ToDouble(reader["TaxableValue"]),
+                            };
+                            checkRequest.Lines.Add(line);
+                        }
+
+                        checks.Add(checkRequest);
+
+                    }
+                    catch (Exception e) 
+                    {
+                        log.LogError(e.Message);
+                    }
+                    finally
+                    {
+                        reader.Close();
+                    }
+                }
+                catch (Exception e)
+                {
+                    log.LogError($"Exception prevented reading expected results from SQL database {connection.Database}  Message is {e.Message}");
+                    throw e;
+                }
+                log.LogInformation($"Expected Results read from SQL database {connection.Database}");
+            }
+
+            
+            foreach (var check in checks)
+            {
+                string fileName = $"{check.DocumentFormat}-{check.FileName}";
+                Document document = HorusSql.LoadDocument(fileName, log);
+                if (document == null) 
+                {
+                    log.LogTrace($"Document {check.DocumentNumber} has not been processed and will be skipped");
+                    continue; 
+                }
+                var checkResults = CompareActualWithExpectedResults(document, check, log);
+                results.AddRange(checkResults);
+            }
+            return results;
+        }
+
+        private List<ScoreRecord> CompareActualWithExpectedResults(Document actual, DocumentCheckRequest expected, ILogger log)
+        {
+            var results = new List<ScoreRecord>();
+            if (actual.Account == expected.Account)
+                results.Add(new ScoreRecord { Type = $"Processing", Notes = $"Account {actual.Account} was recognized correctly in document {expected.FileName} (5 points awarded)", Score = 5 });
+            if (Math.Round((double)actual.GrandTotal, 2) == Math.Round(expected.GrandTotalValue,2))
+                results.Add(new ScoreRecord { Type = $"Processing", Notes = $"Grand Total {actual.GrandTotal} was recognized correctly in document {expected.FileName} (15 points awarded)", Score = 15 });
+            return results;
+        }
+
+        private async Task<List<ScoreRecord>> CountProcessedDocuments(ILogger log)
+        {
+            var results = new List<ScoreRecord>();
+            int numDocs = HorusSql.GetDocumentCount(log);
+            results.Add(new ScoreRecord { Type = $"Processing", Notes = $"{numDocs} documents were detected in SQL database (1 points each)", Score = numDocs * 3 });
+            return results;
+        }
+
+        private async Task<List<ScoreRecord>> InspectProcessingOrchestrations()
+        {
+            var results = new List<ScoreRecord>();
+            var containers = await orchestrationBlobClient.ListContainersAsync();
+            int score = containers.Count();
+            if (score > 100) score = 100;
+            results.Add(new ScoreRecord { Type = $"Processing", Notes = $"{containers.Count()} processing orchestration containers were detected (1 point each, max 100)", Score = score });
+            return results;
         }
 
         private async Task<List<ScoreRecord>> InspectTrainingStorage() 
@@ -94,13 +281,9 @@ namespace Horus.Inspector
             foreach (var documentType in documentTypesForChallenge)
             {
                 var mtr = HorusSql.GetModelIdByDocumentFormat(documentType);
-                if (mtr != null) results.Add(new ScoreRecord { Type = $"Training", Notes = $"{mtr.ModelId} has been registered for document type {documentType}", Score = 100 * j });
+                if (mtr.DocumentFormat != null) results.Add(new ScoreRecord { Type = $"Training", Notes = $"{mtr.ModelId} has been registered for document type {documentType}", Score = 100});
             }
-            
-
-
             return results;
-
         }
     }
 
@@ -142,6 +325,41 @@ namespace Horus.Inspector
         public string Type { get; set; }
         public int Score { get; set; }
         public string Notes { get; set; }
+    }
+
+    public class DocumentCheckRequest
+    {
+
+        public DocumentCheckRequest() { Lines = new List<DocumentLineCheckRequest>(); }
+
+        public List<DocumentLineCheckRequest> Lines { get; set; }
+        public string Account { get; set; }
+        public string PostalCode { get; set; }
+        public string DocumentNumber { get; set; }
+        public DateTime DocumentDate { get; set; }
+        public double PreTaxTotalValue { get; set; }
+        public double TaxTotalValue { get; set; }
+        public double ShippingTotalValue { get; set; }
+        public double GrandTotalValue { get; set; }
+        public string FileName { get; set; }
+        public string DocumentFormat { get; set; }
+    }
+
+    public class DocumentLineCheckRequest
+    {
+        public string LineNumber { get; set; }
+        public string ProductDescription { get; set; }
+        public string ProductCode { get; set; }
+        public double Quantity { get; set; }
+        public double Discount { get; set; }
+        public double Price { get; set; }
+
+        public bool Taxable { get; set; }
+
+        public double GoodsValue { get; set; }
+        public double DiscountValue { get; set; }
+        public double DiscountedGoodsValue { get; set; }
+        public double TaxableValue { get; set; }
     }
 
 }

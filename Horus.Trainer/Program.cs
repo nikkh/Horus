@@ -18,8 +18,6 @@ namespace Placebo.Trainer
         static string serviceBusConnectionString = Environment.GetEnvironmentVariable("ServiceBusConnectionString");
         static string trainingQueueName = Environment.GetEnvironmentVariable("TrainingQueue");
 
-        
-
         static async Task Main(string[] args)
         {
             var directory = Directory.GetCurrentDirectory();

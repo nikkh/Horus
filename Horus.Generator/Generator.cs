@@ -36,8 +36,10 @@ namespace Horus.Generator
             for (int d = 0; d < numDocuments; d++)
             {
                 GeneratorDocument gd = new GeneratorDocument();
+                gd.DocumentFormat = supplier.SupplierKey;
                 gd.DocumentNumber = (baseDocumentNumber + 1 + d).ToString();
-                gd.DocumentDate = DateTime.Now.Subtract(new TimeSpan(random.Next(1, 180), 0, 0, 0)).ToString("dd/MM/yyyy");
+                gd.FileName = $"{gs.Header.DocumentType}-{gd.DocumentNumber}.pdf";
+                gd.DocumentDate = DateTime.Now.Subtract(new TimeSpan(random.Next(1, 180), 0, 0, 0));
                 if (random.Next(1,10) <= 3) gd.Notes = "Need to do something with this";
                 var account = Accounts.GetRandomAccount();
                 gd.PostalCode = account.PostalCode;
@@ -48,7 +50,6 @@ namespace Horus.Generator
                 gd.City = account.City;
                 gd.Lines = new List<GeneratorDocumentLineItem>();
                 var numLines =  random.Next(1, supplier.MaxLines);
-
                 for (int l = 0; l < numLines; l++)
                 {
                     var gdli = new GeneratorDocumentLineItem();
@@ -64,7 +65,7 @@ namespace Horus.Generator
 
                 }
                 gs.Documents.Add(gd);
-
+                gd.Save();
 
             }
             return gs;
