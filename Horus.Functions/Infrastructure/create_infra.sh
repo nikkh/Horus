@@ -2,7 +2,20 @@
 if [ -z "$APPLICATION_NAME" ]; then 
     echo "APPLICATION_NAME does not contain an application root name (4-6 alphanumeric), defaulting to HRANDOM"
     export APPLICATION_NAME=h$RANDOM
+fi
+
+if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then 
+ echo "BUILD_INSPECTION_INFRASTRUCTURE is set - additional infrastructure to host inspection functions will be built."
+ if [ -z "$GENERATOR_DB_PASSWORD" ]; then 
+    echo "When BUILD_INSPECTION_INFRASTRUCTURE is set, then GENERATOR_DB_PASSWORD must also be provided. Application will exit."
     exit
+ fi
+fi
+
+if [ -z "$TEAM_NAME" ]; then 
+    echo "TEAM_NAME does not contain aname for your team, a random name will be generated"
+    export TEAM_NAME=team$RANDOM
+    echo "Your team will be called $TEAM_NAME"
 fi
 
 if [ -z "$LOCATION" ]; then 
@@ -50,6 +63,7 @@ storageSuffix=$RANDOM
 storageAccountName="$applicationName$storageSuffix"orch
 stagingStorageAccountName="$applicationName$storageSuffix"stage
 webjobStorageAccountName="$applicationName$storageSuffix"webjob
+trainingStorageAccountName="$applicationName$storageSuffix"train
 resourceGroupName="$applicationName-rg"
 functionAppName="$applicationName-func"
 dbServerName="$applicationName-db-server"
@@ -71,6 +85,7 @@ integrationEngineType=$$INTEGRATION_ENGINE_TYPE
 echo "storageAccountName=$storageAccountName"
 echo "stagingStorageAccountName=$stagingStorageAccountName"
 echo "webjobStorageAccountName=$webjobStorageAccountName"
+echo "trainingStorageAccountName=$trainingStorageAccountName"
 echo "resourceGroupName=$resourceGroupName"
 echo "functionAppName=$functionAppName"
 echo "dbServerName=$dbServerName"
@@ -88,8 +103,10 @@ echo "persistenceEngineAssembly=$persistenceEngineAssembly"
 echo "persistenceEngineType=$persistenceEngineType"
 echo "integrationEngineAssembly=$integrationEngineAssembly"
 echo "integrationEngineType=$integrationEngineType"
+echo "teamName=$teamName"
 if [ "$SUPPRESS_CONFIRM" ]; then 
- echo "SUPPRESS_CONFIRM is set - confirmation is disabled"  
+ echo "SUPPRESS_CONFIRM is set - confirmation is disabled" 
+
 else
     RED='\033[1;31m'
     NC='\033[0m'
@@ -108,6 +125,8 @@ az group create -n $resourceGroupName -l $location
 az storage account create  --name $storageAccountName  --location $location  --resource-group $resourceGroupName  --sku Standard_LRS
 az storage account create  --name $stagingStorageAccountName  --location $location  --resource-group $resourceGroupName  --sku Standard_LRS
 az storage account create  --name $webjobStorageAccountName  --location $location  --resource-group $resourceGroupName  --sku Standard_LRS
+az storage account create  --name $trainingStorageAccountName  --location $location  --resource-group $resourceGroupName  --sku Standard_LRS
+
 
 # Create a Service Bus Namespace & Queues
 az servicebus namespace create -g $resourceGroupName --n $svcbusnsName --location $location
@@ -119,8 +138,9 @@ stagingStorageAccountId=$(az storage account show -n $stagingStorageAccountName 
 endpoint=$(az servicebus queue show --namespace-name $svcbusnsName --name $docQueueName --resource-group $resourceGroupName --query id --output tsv)
 az eventgrid event-subscription create --name $evtgrdsubName --source-resource-id $stagingStorageAccountId --endpoint-type servicebusqueue  --endpoint $endpoint --included-event-types Microsoft.Storage.BlobCreated
 
-# Create a V3 Function App
+# Create a V3 Function App for Horus.Functions
 az functionapp create  --name $functionAppName   --storage-account $webjobStorageAccountName   --consumption-plan-location $location   --resource-group $resourceGroupName --functions-version 3
+
 # Create a database server (could we use serverless?)
 az sql server create -n $dbServerName -g $resourceGroupName -l $location -u $adminLogin -p $password
 # Configure firewall rules for the server
@@ -146,6 +166,7 @@ sqlConnectionString="${dbConnectionStringWithUser/<password>/$password}"
 # Get other connection strings
 storageAccountConnectionString=$(az storage account show-connection-string -g $resourceGroupName -n $storageAccountName -o tsv)
 stagingStorageAccountConnectionString=$(az storage account show-connection-string -g $resourceGroupName -n $stagingStorageAccountName -o tsv)
+trainingStorageAccountConnectionString=$(az storage account show-connection-string -g $resourceGroupName -n $trainingStorageAccountName -o tsv)
 frEndpoint=$(az cognitiveservices account show -g $resourceGroupName -n $frName --query properties.endpoint -o tsv)
 recognizerApiKey=$(az cognitiveservices account keys list -g $resourceGroupName -n $frName --query 'key1' -o tsv)
 cosmosEndpointUrl=$(az cosmosdb show -n $cosmosDbName -g $resourceGroupName --query 'documentEndpoint' -o tsv)
@@ -166,7 +187,26 @@ echo "********************************"
 echo "Writing connections strings and secrets to $functionAppName configuration"
 
 # update Function App Settings
-az webapp config appsettings set -g $resourceGroupName -n $functionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString StagingStorageAccountConnectionString=$stagingStorageAccountConnectionString RecognizerApiKey=$recognizerApiKey IncomingDocumentServiceBusConnectionString=$serviceBusConnectionString IncomingDocumentsQueue=$docQueueName TrainingQueue=$trainingQueueName CosmosAuthorizationKey=$cosmosAuthorizationKey RecognizerServiceBaseUrl=$frEndpoint CosmosEndPointUrl=$cosmosEndpointUrl CosmosDatabaseId=HorusDb CosmosContainerId=ParsedDocuments ProcessingEngineAssembly=$processingEngineAssembly ProcessingEngineType=$processingEngineType PersistenceEngineAssembly=$ersistenceEngineAssembly PersistenceEngineType=$persistenceEngineType IntegrationEngineAssembly=$ersistenceEngineAssembly IntegrationEngineType=$persistenceEngineType "SQLConnectionString=$sqlConnectionString"
+az webapp config appsettings set -g $resourceGroupName -n $functionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString StagingStorageAccountConnectionString=$stagingStorageAccountConnectionString TeamName=$teamName RecognizerApiKey=$recognizerApiKey IncomingDocumentServiceBusConnectionString=$serviceBusConnectionString IncomingDocumentsQueue=$docQueueName TrainingQueue=$trainingQueueName CosmosAuthorizationKey=$cosmosAuthorizationKey RecognizerServiceBaseUrl=$frEndpoint CosmosEndPointUrl=$cosmosEndpointUrl CosmosDatabaseId=HorusDb CosmosContainerId=ParsedDocuments ProcessingEngineAssembly=$processingEngineAssembly ProcessingEngineType=$processingEngineType PersistenceEngineAssembly=$ersistenceEngineAssembly PersistenceEngineType=$persistenceEngineType IntegrationEngineAssembly=$ersistenceEngineAssembly IntegrationEngineType=$persistenceEngineType "SQLConnectionString=$sqlConnectionString"
+
+if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then 
+ echo "Building additional infrastructure to host inspection functions...."
+ inspectionFunctionAppName="$applicationName-inspect"
+ echo "inspectionFunctionAppName=$inspectionFunctionAppName"
+ inspectionWebjobStorageAccountName="$applicationName$storageSuffix"inspect
+ echo "inspectionWebjobStorageAccountName=$inspectionWebjobStorageAccountName"
+ az storage account create  --name $inspectionWebjobStorageAccountName  --location $location  --resource-group $resourceGroupName  --sku Standard_LRS
+ # Create a V3 Function App for Horus.Inspector
+az functionapp create  --name $inspectionFunctionAppName   --storage-account $inspectionWebjobStorageAccountName   --consumption-plan-location $location   --resource-group $resourceGroupName --functions-version 3
+ # Build Generator SQL connecion string
+baseGeneratorDbConnectionString=$(az sql db show-connection-string -c ado.net -s horus-generator-server -n horus-generator-db -o tsv)
+generatorDbConnectionStringWithUser="${baseGeneratorDbConnectionString/<username>/nick}"
+generatorSQLConnectionString="${generatorDbConnectionStringWithUser/<password>/$GENERATOR_DB_PASSWORD}"
+ # update Function App Settings
+ echo "Writing connections strings and secrets to $inspectionFunctionAppName configuration"
+az webapp config appsettings set -g $resourceGroupName -n $inspectionFunctionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString TeamName=$teamName TrainingStorageAccountConnectionString=$trainingStorageAccountConnectionString "SQLConnectionString=$sqlConnectionString" DocumentTypesForChallenge="abc,nouryon,oscorp" "GeneratorSQLConnectionString=$generatorSQLConnectionString"
+fi
+
 echo -e "The random password generated for ${RED}$adminLogin${NC}, password was ${RED}$password${NC}"
 
     
