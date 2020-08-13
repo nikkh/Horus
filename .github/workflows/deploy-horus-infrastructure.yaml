@@ -2,11 +2,12 @@ on: [workflow_dispatch]
  
 name: Deploy Processing Infrastructure
 env:
-  APPLICATION_NAME: challenge
+  APPLICATION_NAME: flummox
   LOCATION: uksouth  
   SUPPRESS_CONFIRM: True
   TEAM_NAME: Unity
   BUILD_INSPECTION_INFRASTRUCTURE:  True
+  SCORES_APPLICATION_NAME: flummox-scores
   SCORES_DB_PASSWORD: ${{secrets.SCORES_DB_PASSWORD}}
 
 jobs:
