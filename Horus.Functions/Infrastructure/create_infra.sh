@@ -197,12 +197,12 @@ if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then
  # Create a V3 Function App for Horus.Inspector
  az functionapp create  --name $inspectionFunctionAppName   --storage-account $inspectionWebjobStorageAccountName   --consumption-plan-location $location   --resource-group $resourceGroupName --functions-version 3
  # Build Scores SQL connecion string
- baseGeneratorDbConnectionString=$(az sql db show-connection-string -c ado.net -s $scoresDbServerName -n  $scoresDatabaseName-o tsv)
- generatorDbConnectionStringWithUser="${baseGeneratorDbConnectionString/<username>/$scoresAdminLogin}"
- generatorSQLConnectionString="${generatorDbConnectionStringWithUser/<password>/$SCORES_DB_PASSWORD}"
+ baseScoresDbConnectionString=$(az sql db show-connection-string -c ado.net -s $scoresDbServerName -n  $scoresDatabaseName-o tsv)
+ scoresDbConnectionStringWithUser="${baseScoresDbConnectionString/<username>/$scoresAdminLogin}"
+ scoresSQLConnectionString="${scoresDbConnectionStringWithUser/<password>/$SCORES_DB_PASSWORD}"
  # update Function App Settings
  echo "Writing connections strings and secrets to $inspectionFunctionAppName configuration"
- az webapp config appsettings set -g $resourceGroupName -n $inspectionFunctionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString TeamName=$teamName TrainingStorageAccountConnectionString=$trainingStorageAccountConnectionString "SQLConnectionString=$sqlConnectionString" DocumentTypesForChallenge="abc,nouryon,oscorp" "ScoresSQLConnectionString=$ScoresSQLConnectionString"
+ az webapp config appsettings set -g $resourceGroupName -n $inspectionFunctionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString TeamName=$teamName TrainingStorageAccountConnectionString=$trainingStorageAccountConnectionString "SQLConnectionString=$sqlConnectionString" DocumentTypesForChallenge="abc,nouryon,oscorp" "ScoresSQLConnectionString=$scoresSQLConnectionString"
 fi
 
 echo -e "The random password generated for ${RED}$adminLogin${NC}, password was ${RED}$password${NC}"
