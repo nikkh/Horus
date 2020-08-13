@@ -5,6 +5,10 @@ VisualStudioVersion = 16.0.30309.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B2AB935C-299A-4FC1-93DA-9C1ADBCDE7FB}"
 	ProjectSection(SolutionItems) = preProject
+		.github\workflows\deploy-horus-infrastructure.yaml = .github\workflows\deploy-horus-infrastructure.yaml
+		.github\workflows\deploy-horus-inspection-functions.yaml = .github\workflows\deploy-horus-inspection-functions.yaml
+		.github\workflows\deploy-horus-processing-functions.yaml = .github\workflows\deploy-horus-processing-functions.yaml
+		.github\workflows\deploy-horus-scores-infrastructure.yaml = .github\workflows\deploy-horus-scores-infrastructure.yaml
 		..\..\..\Dropbox\Settings Files\Horus.Generator.settings.config = ..\..\..\Dropbox\Settings Files\Horus.Generator.settings.config
 	EndProjectSection
 EndProject
