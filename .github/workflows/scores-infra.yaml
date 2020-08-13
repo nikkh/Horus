@@ -1,6 +1,6 @@
 on: [workflow_dispatch]
  
-name: Deploy Horus Scores Infrastructure
+name: Scores Infrastructure
 env:
   APPLICATION_NAME: flummox-scores
   LOCATION: uksouth  
