@@ -31,6 +31,7 @@ namespace Horus.Inspector
 
         private void CheckAndCreateDatabaseIfNecessary(ILogger log)
         {
+            HorusSql.CheckAndCreateDatabaseIfNecessary(log);
             using (SqlConnection connection = new SqlConnection(scoresSQLConnectionString))
             {
                 connection.Open();
@@ -80,7 +81,7 @@ namespace Horus.Inspector
 
                transaction.Commit();
             }
-            HorusSql.CheckAndCreateDatabaseIfNecessary(log);
+            
         }
 
         public async Task<List<ScoreRecord>> Inspect() 
