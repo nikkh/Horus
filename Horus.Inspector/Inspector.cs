@@ -243,6 +243,7 @@ namespace Horus.Inspector
                 catch (Exception)
                 {
                     log.LogWarning($"Unable to load document {fileName} from processing database - probably due to incorrectly recognised data.");
+                    continue;
                 }
                 if (document == null) 
                 {
