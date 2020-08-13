@@ -1,6 +1,6 @@
 on: [workflow_dispatch]
  
-name: Deploy Infrastructure
+name: Deploy Processing Infrastructure
 env:
   APPLICATION_NAME: ahorus
   LOCATION: uksouth  
