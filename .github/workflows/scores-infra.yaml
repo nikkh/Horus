@@ -2,9 +2,10 @@ on: [workflow_dispatch]
  
 name: Scores Infrastructure
 env:
-  APPLICATION_NAME: slime-scores
+  APPLICATION_NAME: horus-scores
   LOCATION: uksouth  
   SUPPRESS_CONFIRM: True
+  SQL_ALLOW_MY_IP: 92.238.162.45
 
 jobs:
   job1:
