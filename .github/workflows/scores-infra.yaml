@@ -1,8 +1,8 @@
 on: [workflow_dispatch]
  
-name: Deploy Horus Scores Infrastructure
+name: Scores Infrastructure
 env:
-  APPLICATION_NAME: flummox-scores
+  APPLICATION_NAME: slime-scores
   LOCATION: uksouth  
   SUPPRESS_CONFIRM: True
 
