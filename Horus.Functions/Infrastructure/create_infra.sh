@@ -13,7 +13,7 @@ if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then
 fi
 
 if [ -z "$TEAM_NAME" ]; then 
-    echo "TEAM_NAME does not contain aname for your team, a random name will be generated"
+    echo "TEAM_NAME does not contain a name for your team, a random name will be generated"
     export TEAM_NAME=team$RANDOM
     echo "Your team will be called $TEAM_NAME"
 fi
@@ -75,12 +75,13 @@ frName="$applicationName-fr"
 adminLogin="$applicationName-admin"
 password="Boldmere$RANDOM@@@"
 location=$LOCATION
+teamName=$TEAM_NAME
 processingEngineAssembly=$PROCESSING_ENGINE_ASSEMBLY
 processingEngineType=$PROCESSING_ENGINE_TYPE
 persistenceEngineAssembly=$PERSISTENCE_ENGINE_ASSEMBLY
 persistenceEngineType=$PERSISTENCE_ENGINE_TYPE
 integrationEngineAssembly=$INTEGRATION_ENGINE_ASSEMBLY
-integrationEngineType=$$INTEGRATION_ENGINE_TYPE
+integrationEngineType=$INTEGRATION_ENGINE_TYPE
 # Play settings back and wait for confirmation
 echo "storageAccountName=$storageAccountName"
 echo "stagingStorageAccountName=$stagingStorageAccountName"
@@ -106,13 +107,12 @@ echo "integrationEngineType=$integrationEngineType"
 echo "teamName=$teamName"
 if [ "$SUPPRESS_CONFIRM" ]; then 
  echo "SUPPRESS_CONFIRM is set - confirmation is disabled" 
-
 else
-    RED='\033[1;31m'
-    NC='\033[0m'
-    echo -e ${RED} 
-    read -n 1 -r -s -p $"Press Enter to create the envrionment or Ctrl-C to quit and change environment variables"
-    echo -e ${NC} 
+ RED='\033[1;31m'
+ NC='\033[0m'
+ echo -e ${RED} 
+ read -n 1 -r -s -p $"Press Enter to create the envrionment or Ctrl-C to quit and change environment variables"
+ echo -e ${NC} 
 fi
 
 docQueueName="incoming-documents"
@@ -121,12 +121,11 @@ trainingQueueName="training-requests"
 # Create a resource group
 az group create -n $resourceGroupName -l $location 
 
-# Create an (orchestration) storage account and one for staging.
+# Create processing storage accounts... 
 az storage account create  --name $storageAccountName  --location $location  --resource-group $resourceGroupName  --sku Standard_LRS
 az storage account create  --name $stagingStorageAccountName  --location $location  --resource-group $resourceGroupName  --sku Standard_LRS
 az storage account create  --name $webjobStorageAccountName  --location $location  --resource-group $resourceGroupName  --sku Standard_LRS
 az storage account create  --name $trainingStorageAccountName  --location $location  --resource-group $resourceGroupName  --sku Standard_LRS
-
 
 # Create a Service Bus Namespace & Queues
 az servicebus namespace create -g $resourceGroupName --n $svcbusnsName --location $location
@@ -167,23 +166,16 @@ sqlConnectionString="${dbConnectionStringWithUser/<password>/$password}"
 storageAccountConnectionString=$(az storage account show-connection-string -g $resourceGroupName -n $storageAccountName -o tsv)
 stagingStorageAccountConnectionString=$(az storage account show-connection-string -g $resourceGroupName -n $stagingStorageAccountName -o tsv)
 trainingStorageAccountConnectionString=$(az storage account show-connection-string -g $resourceGroupName -n $trainingStorageAccountName -o tsv)
+az storage cors add --connection-string $trainingStorageAccountConnectionString --origins '*' --methods DELETE GET HEAD MERGE POST OPTIONS PUT --allowed-headers '*' --exposed-headers '*' --max-age 200 --services b
+web
+
+
 frEndpoint=$(az cognitiveservices account show -g $resourceGroupName -n $frName --query properties.endpoint -o tsv)
 recognizerApiKey=$(az cognitiveservices account keys list -g $resourceGroupName -n $frName --query 'key1' -o tsv)
 cosmosEndpointUrl=$(az cosmosdb show -n $cosmosDbName -g $resourceGroupName --query 'documentEndpoint' -o tsv)
 cosmosAuthorizationKey=$(az cosmosdb keys list -n $cosmosDbName -g $resourceGroupName --query 'primaryMasterKey' -o tsv)
 serviceBusConnectionString=$(az servicebus namespace authorization-rule keys list -g $resourceGroupName --namespace-name $svcbusnsName -n RootManageSharedAccessKey --query 'primaryConnectionString' -o tsv)
 
-# Replay the connections strings back
-echo "********************************"
-echo "RecognizerServiceBaseUrl: $frEndpoint"
-echo "IncomingConnection: $storageAccountConnectionString"
-echo "PlaceboStaging: $stagingStorageAccountConnectionString"
-echo "RecognizerApiKey: $recognizerApiKey"
-echo "ServiceBusConnectionString: $serviceBusConnectionString"
-echo "CosmosEndPointUrl: $cosmosEndpointUrl"
-echo "CosmosAuthorizationKey: $cosmosAuthorizationKey"
-echo "SqlConnectionString: $sqlConnectionString"
-echo "********************************"
 echo "Writing connections strings and secrets to $functionAppName configuration"
 
 # update Function App Settings
@@ -197,14 +189,14 @@ if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then
  echo "inspectionWebjobStorageAccountName=$inspectionWebjobStorageAccountName"
  az storage account create  --name $inspectionWebjobStorageAccountName  --location $location  --resource-group $resourceGroupName  --sku Standard_LRS
  # Create a V3 Function App for Horus.Inspector
-az functionapp create  --name $inspectionFunctionAppName   --storage-account $inspectionWebjobStorageAccountName   --consumption-plan-location $location   --resource-group $resourceGroupName --functions-version 3
+ az functionapp create  --name $inspectionFunctionAppName   --storage-account $inspectionWebjobStorageAccountName   --consumption-plan-location $location   --resource-group $resourceGroupName --functions-version 3
  # Build Generator SQL connecion string
-baseGeneratorDbConnectionString=$(az sql db show-connection-string -c ado.net -s horus-generator-server -n horus-generator-db -o tsv)
-generatorDbConnectionStringWithUser="${baseGeneratorDbConnectionString/<username>/nick}"
-generatorSQLConnectionString="${generatorDbConnectionStringWithUser/<password>/$GENERATOR_DB_PASSWORD}"
+ baseGeneratorDbConnectionString=$(az sql db show-connection-string -c ado.net -s horus-generator-server -n horus-generator-db -o tsv)
+ generatorDbConnectionStringWithUser="${baseGeneratorDbConnectionString/<username>/nick}"
+ generatorSQLConnectionString="${generatorDbConnectionStringWithUser/<password>/$GENERATOR_DB_PASSWORD}"
  # update Function App Settings
  echo "Writing connections strings and secrets to $inspectionFunctionAppName configuration"
-az webapp config appsettings set -g $resourceGroupName -n $inspectionFunctionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString TeamName=$teamName TrainingStorageAccountConnectionString=$trainingStorageAccountConnectionString "SQLConnectionString=$sqlConnectionString" DocumentTypesForChallenge="abc,nouryon,oscorp" "GeneratorSQLConnectionString=$generatorSQLConnectionString"
+ az webapp config appsettings set -g $resourceGroupName -n $inspectionFunctionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString TeamName=$teamName TrainingStorageAccountConnectionString=$trainingStorageAccountConnectionString "SQLConnectionString=$sqlConnectionString" DocumentTypesForChallenge="abc,nouryon,oscorp" "GeneratorSQLConnectionString=$generatorSQLConnectionString"
 fi
 
 echo -e "The random password generated for ${RED}$adminLogin${NC}, password was ${RED}$password${NC}"
