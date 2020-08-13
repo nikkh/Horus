@@ -10,6 +10,10 @@ if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then
     echo "When BUILD_INSPECTION_INFRASTRUCTURE is set, then SCORES_DB_PASSWORD must also be provided. Application will exit."
     exit
  fi
+ if [ -z "$SCORES_APPLICATION_NAME" ]; then 
+    echo "When BUILD_INSPECTION_INFRASTRUCTURE is set, then SCORES_APPLICATION_NAME must also be provided. Application will exit."
+    exit
+ fi
 fi
 
 if [ -z "$TEAM_NAME" ]; then 
@@ -167,8 +171,6 @@ storageAccountConnectionString=$(az storage account show-connection-string -g $r
 stagingStorageAccountConnectionString=$(az storage account show-connection-string -g $resourceGroupName -n $stagingStorageAccountName -o tsv)
 trainingStorageAccountConnectionString=$(az storage account show-connection-string -g $resourceGroupName -n $trainingStorageAccountName -o tsv)
 az storage cors add --connection-string $trainingStorageAccountConnectionString --origins '*' --methods DELETE GET HEAD MERGE POST OPTIONS PUT --allowed-headers '*' --exposed-headers '*' --max-age 200 --services b
-web
-
 
 frEndpoint=$(az cognitiveservices account show -g $resourceGroupName -n $frName --query properties.endpoint -o tsv)
 recognizerApiKey=$(az cognitiveservices account keys list -g $resourceGroupName -n $frName --query 'key1' -o tsv)
@@ -179,10 +181,13 @@ serviceBusConnectionString=$(az servicebus namespace authorization-rule keys lis
 echo "Writing connections strings and secrets to $functionAppName configuration"
 
 # update Function App Settings
-az webapp config appsettings set -g $resourceGroupName -n $functionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString StagingStorageAccountConnectionString=$stagingStorageAccountConnectionString TeamName=$teamName RecognizerApiKey=$recognizerApiKey IncomingDocumentServiceBusConnectionString=$serviceBusConnectionString IncomingDocumentsQueue=$docQueueName TrainingQueue=$trainingQueueName CosmosAuthorizationKey=$cosmosAuthorizationKey RecognizerServiceBaseUrl=$frEndpoint CosmosEndPointUrl=$cosmosEndpointUrl CosmosDatabaseId=HorusDb CosmosContainerId=ParsedDocuments ProcessingEngineAssembly=$processingEngineAssembly ProcessingEngineType=$processingEngineType PersistenceEngineAssembly=$ersistenceEngineAssembly PersistenceEngineType=$persistenceEngineType IntegrationEngineAssembly=$ersistenceEngineAssembly IntegrationEngineType=$persistenceEngineType "SQLConnectionString=$sqlConnectionString"
-# Server=tcp:horus-scores-db-server.database.windows.net,1433;Initial Catalog=horus-scores-db;Persist Security Info=False;User ID=horus-scores-admin;Password=Boldmere1883@@@;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+az webapp config appsettings set -g $resourceGroupName -n $functionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString StagingStorageAccountConnectionString=$stagingStorageAccountConnectionString TeamName=$teamName RecognizerApiKey=$recognizerApiKey IncomingDocumentServiceBusConnectionString=$serviceBusConnectionString IncomingDocumentsQueue=$docQueueName TrainingQueue=$trainingQueueName CosmosAuthorizationKey=$cosmosAuthorizationKey RecognizerServiceBaseUrl=$frEndpoint CosmosEndPointUrl=$cosmosEndpointUrl CosmosDatabaseId=HorusDb CosmosContainerId=ParsedDocuments ProcessingEngineAssembly=$processingEngineAssembly ProcessingEngineType=$processingEngineType PersistenceEngineAssembly=$persistenceEngineAssembly PersistenceEngineType=$persistenceEngineType IntegrationEngineAssembly=$integrationEngineAssembly IntegrationEngineType=$integrationEngineType "SQLConnectionString=$sqlConnectionString"
+#
 if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then
- scoresDbAdminUser="horus-scores-admin"
+ scoresApplicationName=$SCORES_APPLICATION_NAME
+ scoresAdminLogin="$scoresApplicationName-admin"
+ scoresDbServerName="$scoresApplicationName-db-server"
+ scoresDatabaseName="$scoresApplicationName-db"
  echo "Building additional infrastructure to host inspection functions...."
  inspectionFunctionAppName="$applicationName-inspect"
  echo "inspectionFunctionAppName=$inspectionFunctionAppName"
@@ -191,13 +196,13 @@ if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then
  az storage account create  --name $inspectionWebjobStorageAccountName  --location $location  --resource-group $resourceGroupName  --sku Standard_LRS
  # Create a V3 Function App for Horus.Inspector
  az functionapp create  --name $inspectionFunctionAppName   --storage-account $inspectionWebjobStorageAccountName   --consumption-plan-location $location   --resource-group $resourceGroupName --functions-version 3
- # Build Generator SQL connecion string
- baseGeneratorDbConnectionString=$(az sql db show-connection-string -c ado.net -s horus-generator-server -n horus-generator-db -o tsv)
- generatorDbConnectionStringWithUser="${baseGeneratorDbConnectionString/<username>/$scoresDbAdminUser}"
+ # Build Scores SQL connecion string
+ baseGeneratorDbConnectionString=$(az sql db show-connection-string -c ado.net -s $scoresDbServerName -n  $scoresDatabaseName-o tsv)
+ generatorDbConnectionStringWithUser="${baseGeneratorDbConnectionString/<username>/$scoresAdminLogin}"
  generatorSQLConnectionString="${generatorDbConnectionStringWithUser/<password>/$SCORES_DB_PASSWORD}"
  # update Function App Settings
  echo "Writing connections strings and secrets to $inspectionFunctionAppName configuration"
- az webapp config appsettings set -g $resourceGroupName -n $inspectionFunctionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString TeamName=$teamName TrainingStorageAccountConnectionString=$trainingStorageAccountConnectionString "SQLConnectionString=$sqlConnectionString" DocumentTypesForChallenge="abc,nouryon,oscorp" "GeneratorSQLConnectionString=$generatorSQLConnectionString"
+ az webapp config appsettings set -g $resourceGroupName -n $inspectionFunctionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString TeamName=$teamName TrainingStorageAccountConnectionString=$trainingStorageAccountConnectionString "SQLConnectionString=$sqlConnectionString" DocumentTypesForChallenge="abc,nouryon,oscorp" "ScoresSQLConnectionString=$ScoresSQLConnectionString"
 fi
 
 echo -e "The random password generated for ${RED}$adminLogin${NC}, password was ${RED}$password${NC}"

@@ -2,13 +2,17 @@
 using Horus.Trainer;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.ServiceBus;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Placebo.Trainer
@@ -43,6 +47,6 @@ namespace Placebo.Trainer
             }
         }
 
-       
+
     }
 }
