@@ -2,9 +2,9 @@ on: [workflow_dispatch]
  
 name: Deploy Processing Infrastructure
 env:
-  APPLICATION_NAME: ahorus
+  APPLICATION_NAME: challenge
   LOCATION: uksouth  
-  SUPPRESS_PROMPT: True
+  SUPPRESS_CONFIRM: True
   TEAM_NAME: Unity
   BUILD_INSPECTION_INFRASTRUCTURE:  True
   GENERATOR_DB_PASSWORD: ${{secrets.GENERATOR_DB_PASSWORD}}
