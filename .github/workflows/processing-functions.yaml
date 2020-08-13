@@ -1,4 +1,4 @@
-name: Deploy Horus Processing Functions
+name: Deploy Processing Functions
 env:
    LOCATION: uksouth
    APPLICATION_NAME: flummox
