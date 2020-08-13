@@ -31,13 +31,16 @@ namespace Horus.Inspector
 
         private void CheckAndCreateDatabaseIfNecessary(ILogger log)
         {
+            log.LogTrace($"Checking if processing database has been initialised");
             HorusSql.CheckAndCreateDatabaseIfNecessary(log);
+            
             using (SqlConnection connection = new SqlConnection(scoresSQLConnectionString))
             {
                 connection.Open();
                 SqlCommand command = connection.CreateCommand();
                 SqlDataReader reader;
                 command.Connection = connection;
+                log.LogTrace($"Checking if scores database has been initialised");
                 command.CommandText = "select name from sysobjects where name = 'ScoreSummary'";
                 using (reader = command.ExecuteReader())
                 {
@@ -86,6 +89,7 @@ namespace Horus.Inspector
 
         public async Task<List<ScoreRecord>> Inspect() 
         {
+            log.LogInformation($"Inspection started");
             records.AddRange(await InspectTrainingStorage());
             records.AddRange(await InspectModelRegistration());
             records.AddRange(await InspectProcessingOrchestrations());
@@ -100,7 +104,9 @@ namespace Horus.Inspector
         {
             using (SqlConnection connection = new SqlConnection(scoresSQLConnectionString))
             {
+                
                 connection.Open();
+                log.LogTrace($"Updating database {connection.Database} with scores");
                 SqlCommand command = connection.CreateCommand();
                 SqlTransaction transaction;
                 transaction = connection.BeginTransaction("ScoresTransaction");
@@ -143,6 +149,8 @@ namespace Horus.Inspector
         private async Task<List<ScoreRecord>> CheckIndividualDocuments(ILogger log)
         {
             var results = new List<ScoreRecord>();
+            log.LogTrace($"Checking accuracy of document recognition");
+            log.LogTrace($"Reading expected results from SQL Database");
             var checks = new List<DocumentCheckRequest>();
             using (SqlConnection connection = new SqlConnection(scoresSQLConnectionString))
             {
@@ -238,6 +246,7 @@ namespace Horus.Inspector
                 Document document = null;
                 try
                 {
+                    log.LogTrace($"Checking {fileName}");
                     document = HorusSql.LoadDocument(fileName, log);
                 }
                 catch (Exception)
@@ -258,18 +267,65 @@ namespace Horus.Inspector
 
         private List<ScoreRecord> CompareActualWithExpectedResults(Document actual, DocumentCheckRequest expected, ILogger log)
         {
+            log.LogTrace($"Checking accuracy of document {actual.DocumentNumber}");
             var results = new List<ScoreRecord>();
+
+            log.LogTrace($"Document {actual.DocumentNumber} Account: Expected {expected.Account}, Actual {actual.Account}");
             if (actual.Account == expected.Account)
+            {
+                log.LogTrace($"Document {actual.DocumentNumber} Account: points awarded for exact match");
                 results.Add(new ScoreRecord { Type = $"Processing", Notes = $"Account {actual.Account} was recognized correctly in document {expected.FileName} (5 points awarded)", Score = 5 });
-            if (Math.Round((double)actual.GrandTotal, 2) == Math.Round(expected.GrandTotalValue,2))
+            }
+            else { log.LogTrace($"Document {actual.DocumentNumber} Account does not match"); }
+
+            log.LogTrace($"Document {actual.DocumentNumber} GrandTotal: Expected {expected.GrandTotalValue}, Actual {actual.GrandTotal}");
+            if (Math.Round((double)actual.GrandTotal, 2) == Math.Round(expected.GrandTotalValue, 2))
+            {
+                log.LogTrace($"Document {actual.DocumentNumber} GrandTotal: points awarded for match after rounding");
                 results.Add(new ScoreRecord { Type = $"Processing", Notes = $"Grand Total {actual.GrandTotal} was recognized correctly in document {expected.FileName} (15 points awarded)", Score = 15 });
+            }
+            else { log.LogTrace($"Document {actual.DocumentNumber} GrandTotal does not match"); }
+
+            log.LogTrace($"Document {actual.DocumentNumber} ShippingTotal: Expected {expected.ShippingTotalValue}, Actual {actual.ShippingTotal}");
+            if (Math.Round((double)actual.ShippingTotal, 2) == Math.Round(expected.ShippingTotalValue, 2))
+            {
+                log.LogTrace($"Document {actual.DocumentNumber} ShippingTotal: points awarded for match after rounding");
+                results.Add(new ScoreRecord { Type = $"Processing", Notes = $"ShippingTotal {actual.ShippingTotal} was recognized correctly in document {expected.FileName} (15 points awarded)", Score = 15 });
+            }
+            else { log.LogTrace($"Document {actual.DocumentNumber} ShippingTotal does not match"); }
+
+            log.LogTrace($"Document {actual.DocumentNumber} NetTotal: Expected {expected.PreTaxTotalValue}, Actual {actual.NetTotal}");
+            if (Math.Round((double)actual.NetTotal, 2) == Math.Round(expected.PreTaxTotalValue, 2))
+            {
+                log.LogTrace($"Document {actual.DocumentNumber} NetTotal: points awarded for match after rounding");
+                results.Add(new ScoreRecord { Type = $"Processing", Notes = $"NetTotal {actual.NetTotal} was recognized correctly in document {expected.FileName} (15 points awarded)", Score = 15 });
+            }
+            else { log.LogTrace($"Document {actual.DocumentNumber} NetTotal does not match"); }
+
+            log.LogTrace($"Document {actual.DocumentNumber} VatAmount: Expected {expected.TaxTotalValue}, Actual {actual.VatAmount}");
+            if (Math.Round((double)actual.VatAmount, 2) == Math.Round(expected.TaxTotalValue, 2))
+            {
+                log.LogTrace($"Document {actual.DocumentNumber} VatAmount: points awarded for match after rounding");
+                results.Add(new ScoreRecord { Type = $"Processing", Notes = $"VatAmount {actual.VatAmount} was recognized correctly in document {expected.FileName} (15 points awarded)", Score = 15 });
+            }
+
+            log.LogTrace($"Document {actual.DocumentNumber} PostCode: Expected {expected.PostalCode}, Actual {actual.PostCode}");
+            if (actual.PostCode == expected.PostalCode)
+            {
+                log.LogTrace($"Document {actual.DocumentNumber} PostCode: points awarded for match");
+                results.Add(new ScoreRecord { Type = $"Processing", Notes = $"PostCode {actual.PostCode} was recognized correctly in document {expected.FileName} (15 points awarded)", Score = 15 });
+            }
+            else { log.LogTrace($"Document {actual.DocumentNumber} PostCode does not match"); }
+
             return results;
         }
 
         private async Task<List<ScoreRecord>> CountProcessedDocuments(ILogger log)
         {
             var results = new List<ScoreRecord>();
+            log.LogTrace($"Checking for documents in SQL database");
             int numDocs = HorusSql.GetDocumentCount(log);
+            log.LogTrace($"{numDocs} documents have been analysed and saved to SQL");
             results.Add(new ScoreRecord { Type = $"Processing", Notes = $"{numDocs} documents were detected in SQL database (1 points each)", Score = numDocs * 3 });
             return results;
         }
@@ -277,8 +333,10 @@ namespace Horus.Inspector
         private async Task<List<ScoreRecord>> InspectProcessingOrchestrations()
         {
             var results = new List<ScoreRecord>();
+            log.LogTrace($"Checking processing orchestrations");
             var containers = await orchestrationBlobClient.ListContainersAsync();
             int score = containers.Count();
+            log.LogTrace($"{score} orchestration containers were present");
             if (score > 100) score = 100;
             results.Add(new ScoreRecord { Type = $"Processing", Notes = $"{containers.Count()} processing orchestration containers were detected (1 point each, max 100)", Score = score });
             return results;
@@ -289,20 +347,25 @@ namespace Horus.Inspector
             var results = new List<ScoreRecord>();
 
             // Check containers have been created for each document type where a model needs to be trained
+            log.LogTrace($"Checking that processing containers have been created in training account");
             var containers = await trainingBlobClient.ListContainersAsync();
             var documentTypesForChallenge = Environment.GetEnvironmentVariable("DocumentTypesForChallenge").Split(',').ToList();
             foreach (var item in documentTypesForChallenge)
             {
+                log.LogTrace($"Checking container {item}");
                 if (containers.Where(c=>c.Name == item).Count() == 1)
                 {
+                    log.LogTrace($"Container {item} has been created");
                     results.Add(new ScoreRecord { Type = $"Training", Notes=$"Container for document type {item} was detected", Score = 10 / documentTypesForChallenge.Count }); 
                 }
 
             }
 
             // Check that training documents have been uploaded
+            log.LogTrace($"Checking that training documents have been uploaded to  containers");
             foreach (var item in containers)
             {
+                log.LogTrace($"Container {item.Name}");
                 int i = 0; int j = 0;
                 var allBlobs = await item.ListBlobsAsync();
                 foreach (IListBlobItem blob in allBlobs)
@@ -310,6 +373,7 @@ namespace Horus.Inspector
                     string name = blob.Uri.Segments.Last();
                     if (name.ToLower().EndsWith(".pdf"))
                     {
+                        log.LogTrace($"Document {name} detected");
                         if (i < 10)
                         {
                             i++;
@@ -318,6 +382,7 @@ namespace Horus.Inspector
 
                     if (name.ToLower().EndsWith(".pdf.labels.json"))
                     {
+                        log.LogTrace($"Document {name} detected");
                         if (j < 10)
                         {
                             j++;
@@ -326,6 +391,7 @@ namespace Horus.Inspector
 
                     if (name.ToLower().EndsWith(".fott"))
                     {
+                        log.LogTrace($"Document {name} detected");
                         results.Add(new ScoreRecord { Type = $"Training", Notes = $"Recognizer labelling project has been created {name}", Score = 50 });
                     }
                 }
@@ -341,11 +407,17 @@ namespace Horus.Inspector
         private async Task<List<ScoreRecord>> InspectModelRegistration()
         {
             var results = new List<ScoreRecord>();
+            log.LogTrace($"Checking that a Model has been registered for each document type");
             var documentTypesForChallenge = Environment.GetEnvironmentVariable("DocumentTypesForChallenge").Split(',').ToList();
             foreach (var documentType in documentTypesForChallenge)
             {
+                log.LogTrace($"Checking {documentType}");
                 var mtr = HorusSql.GetModelIdByDocumentFormat(documentType);
-                if (mtr.DocumentFormat != null) results.Add(new ScoreRecord { Type = $"Training", Notes = $"{mtr.ModelId} has been registered for document type {documentType}", Score = 100});
+                if (mtr.DocumentFormat != null)
+                {
+                    log.LogTrace($"Model {mtr.ModelId} has been registered for {documentType}");
+                    results.Add(new ScoreRecord { Type = $"Training", Notes = $"{mtr.ModelId} has been registered for document type {documentType}", Score = 100 });
+                }
             }
             return results;
         }
