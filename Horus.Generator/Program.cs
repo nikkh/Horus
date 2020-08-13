@@ -51,7 +51,7 @@ namespace Horus.Generator
         static int numDocs = 10;
         static void Main(string[] args)
         {
-            if (String.IsNullOrEmpty(args[0]))
+            if (!String.IsNullOrEmpty(args[0]))
             {
                 numDocs = Convert.ToInt32(args[0]);
             }
@@ -72,7 +72,10 @@ namespace Horus.Generator
                 else
                 {
                     var pdfs = Directory.GetFiles(outputDirName);
-                    nextDocNumber = Int32.Parse(pdfs.Last().Split('\\').Last().Split('.')[0].Split('-')[1]);
+                    if (pdfs != null && pdfs.Length > 0)
+                    {
+                        nextDocNumber = Int32.Parse(pdfs.Last().Split('\\').Last().Split('.')[0].Split('-')[1]);
+                    }
                 }
                 Console.WriteLine($"files will be saved to {outputDirName}");
                 Console.WriteLine($"first document number for this run will be {nextDocNumber+1}");

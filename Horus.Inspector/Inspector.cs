@@ -234,6 +234,7 @@ namespace Horus.Inspector
             foreach (var check in checks)
             {
                 string fileName = $"{check.DocumentFormat}-{check.FileName}";
+                log.LogDebug($"Loading document {fileName} from processing database");
                 Document document = HorusSql.LoadDocument(fileName, log);
                 if (document == null) 
                 {

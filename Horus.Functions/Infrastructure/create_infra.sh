@@ -197,7 +197,7 @@ if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then
  # Create a V3 Function App for Horus.Inspector
  az functionapp create  --name $inspectionFunctionAppName   --storage-account $inspectionWebjobStorageAccountName   --consumption-plan-location $location   --resource-group $resourceGroupName --functions-version 3
  # Build Scores SQL connecion string
- baseScoresDbConnectionString=$(az sql db show-connection-string -c ado.net -s $scoresDbServerName -n  $scoresDatabaseName-o tsv)
+ baseScoresDbConnectionString=$(az sql db show-connection-string -c ado.net -s $scoresDbServerName -n  $scoresDatabaseName -o tsv)
  scoresDbConnectionStringWithUser="${baseScoresDbConnectionString/<username>/$scoresAdminLogin}"
  scoresSQLConnectionString="${scoresDbConnectionStringWithUser/<password>/$SCORES_DB_PASSWORD}"
  # update Function App Settings
