@@ -1,14 +1,10 @@
 on: [workflow_dispatch]
  
-name: Deploy Processing Infrastructure
+name: Deploy Horus Scores Infrastructure
 env:
-  APPLICATION_NAME: flummox
+  APPLICATION_NAME: flummox-scores
   LOCATION: uksouth  
   SUPPRESS_CONFIRM: True
-  TEAM_NAME: Unity
-  BUILD_INSPECTION_INFRASTRUCTURE:  True
-  SCORES_APPLICATION_NAME: flummox-scores
-  SCORES_DB_PASSWORD: ${{secrets.SCORES_DB_PASSWORD}}
 
 jobs:
   job1:
@@ -24,5 +20,5 @@ jobs:
    
       - name: Run Deployment Scripts
         run: |
-                chmod +x Horus.Functions/Infrastructure/create_infra.sh
-                Horus.Functions/Infrastructure/create_infra.sh
+                chmod +x Horus.Functions/Infrastructure/create_scores_infra.sh
+                Horus.Functions/Infrastructure/create_scores_infra.sh
