@@ -2,7 +2,7 @@ on: [workflow_dispatch]
  
 name: Deploy Horus Scores Infrastructure
 env:
-  APPLICATION_NAME: challenge-scores
+  APPLICATION_NAME: flummox-scores
   LOCATION: uksouth  
   SUPPRESS_CONFIRM: True
 
