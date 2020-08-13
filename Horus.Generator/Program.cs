@@ -47,18 +47,23 @@ namespace Horus.Generator
 {
     class Program
     {
-        const int DOCS_TO_GENERATE = 10;
+        
+        static int numDocs = 10;
         static void Main(string[] args)
         {
+            if (String.IsNullOrEmpty(args[0]))
+            {
+                numDocs = Convert.ToInt32(args[0]);
+            }
             var startTime = DateTime.Now;
             var docCount = 0;
             Console.WriteLine($"Welcome to Horus Document Generator!");
-            Console.WriteLine($"today we will be generating {DOCS_TO_GENERATE} documents for each supplier");
+            Console.WriteLine($"today we will be generating {numDocs} documents for each supplier");
                      
             foreach (var supplier in new Suppliers().GetSuppliers())
             {
                 Console.WriteLine($"processing supplier {supplier.SupplierName.Split('|')[0]}");
-                int nextDocNumber=15000;
+                int nextDocNumber=30000;
                 var outputDirName = $"{Directory.GetCurrentDirectory()}\\generated\\{supplier.SupplierKey.ToLower()}";
                 if (!Directory.Exists(outputDirName))
                 {
@@ -73,7 +78,7 @@ namespace Horus.Generator
                 Console.WriteLine($"first document number for this run will be {nextDocNumber+1}");
                 Console.WriteLine($"generating documents...");
                 
-                var genSpec = Generator.Generate(supplier, DOCS_TO_GENERATE, nextDocNumber);
+                var genSpec = Generator.Generate(supplier, numDocs, nextDocNumber);
                 Console.WriteLine($"generating complete...");
                 Console.WriteLine($"Building a document image for each of the generated documents");
                 try

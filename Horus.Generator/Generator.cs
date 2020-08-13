@@ -19,7 +19,7 @@ namespace Horus.Generator
         static Random random = new Random();
         public static readonly string saveExpectedResultsToScoreDatabase = ConfigurationManager.AppSettings["SaveExpectedResultsToScoreDatabase"];
 
-        public static GeneratorSpecification Generate(Supplier supplier, int numDocuments = 1, int baseDocumentNumber = 15000)
+        public static GeneratorSpecification Generate(Supplier supplier, int numDocuments = 1, int baseDocumentNumber = 20000)
         {
             bool save = false;
             if (saveExpectedResultsToScoreDatabase.ToLower() == "true")
