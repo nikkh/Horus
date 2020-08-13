@@ -1,6 +1,6 @@
 on: [workflow_dispatch]
  
-name: Deploy Processing Infrastructure
+name: Processing Infrastructure
 env:
   APPLICATION_NAME: flummox
   LOCATION: uksouth  
