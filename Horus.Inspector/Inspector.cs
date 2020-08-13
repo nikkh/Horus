@@ -235,10 +235,18 @@ namespace Horus.Inspector
             {
                 string fileName = $"{check.DocumentFormat}-{check.FileName}";
                 log.LogDebug($"Loading document {fileName} from processing database");
-                Document document = HorusSql.LoadDocument(fileName, log);
+                Document document = null;
+                try
+                {
+                    document = HorusSql.LoadDocument(fileName, log);
+                }
+                catch (Exception)
+                {
+                    log.LogWarning($"Unable to load document {fileName} from processing database - probably due to incorrectly recognised data.");
+                }
                 if (document == null) 
                 {
-                    log.LogTrace($"Document {check.DocumentNumber} has not been processed and will be skipped");
+                    log.LogTrace($"Document {check.DocumentNumber} has not been processed sucessfully and will be skipped");
                     continue; 
                 }
                 var checkResults = CompareActualWithExpectedResults(document, check, log);
