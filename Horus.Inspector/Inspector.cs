@@ -20,7 +20,7 @@ namespace Horus.Inspector
         private readonly List<ScoreRecord> records;
         private static readonly CloudBlobClient trainingBlobClient = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("TrainingStorageAccountConnectionString")).CreateCloudBlobClient();
         static readonly CloudBlobClient orchestrationBlobClient = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("OrchestrationStorageAccountConnectionString")).CreateCloudBlobClient();
-        public static readonly string sqlConnectionString = Environment.GetEnvironmentVariable("ScoresSQLConnectionString");
+        public static readonly string scoresSQLConnectionString = Environment.GetEnvironmentVariable("ScoresSQLConnectionString");
         public static readonly string teamName = Environment.GetEnvironmentVariable("TeamName");
         public Inspector(ILogger log)
         {
@@ -31,7 +31,7 @@ namespace Horus.Inspector
 
         private void CheckAndCreateDatabaseIfNecessary(ILogger log)
         {
-            using (SqlConnection connection = new SqlConnection(sqlConnectionString))
+            using (SqlConnection connection = new SqlConnection(scoresSQLConnectionString))
             {
                 connection.Open();
                 SqlCommand command = connection.CreateCommand();
@@ -80,6 +80,7 @@ namespace Horus.Inspector
 
                transaction.Commit();
             }
+            HorusSql.CheckAndCreateDatabaseIfNecessary(log);
         }
 
         public async Task<List<ScoreRecord>> Inspect() 
@@ -96,7 +97,7 @@ namespace Horus.Inspector
 
         private void UpdateDatabase(List<ScoreRecord> records)
         {
-            using (SqlConnection connection = new SqlConnection(sqlConnectionString))
+            using (SqlConnection connection = new SqlConnection(scoresSQLConnectionString))
             {
                 connection.Open();
                 SqlCommand command = connection.CreateCommand();
@@ -142,7 +143,7 @@ namespace Horus.Inspector
         {
             var results = new List<ScoreRecord>();
             var checks = new List<DocumentCheckRequest>();
-            using (SqlConnection connection = new SqlConnection(sqlConnectionString))
+            using (SqlConnection connection = new SqlConnection(scoresSQLConnectionString))
             {
                 connection.Open();
                 SqlCommand command = connection.CreateCommand();
