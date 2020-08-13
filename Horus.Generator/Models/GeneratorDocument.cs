@@ -10,7 +10,8 @@ namespace Horus.Generator.Models
 {
     public class GeneratorDocument
     {
-        public static readonly string sqlConnectionString = ConfigurationManager.AppSettings["ResultsSqlConnectionString"];   
+        
+        public static readonly string sqlConnectionString = ConfigurationManager.AppSettings["ScoresSqlConnectionString"];
 
         public List<GeneratorDocumentLineItem> Lines { get; set; }
         public string Account { get; set; }

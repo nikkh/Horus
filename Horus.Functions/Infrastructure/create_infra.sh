@@ -6,8 +6,8 @@ fi
 
 if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then 
  echo "BUILD_INSPECTION_INFRASTRUCTURE is set - additional infrastructure to host inspection functions will be built."
- if [ -z "$GENERATOR_DB_PASSWORD" ]; then 
-    echo "When BUILD_INSPECTION_INFRASTRUCTURE is set, then GENERATOR_DB_PASSWORD must also be provided. Application will exit."
+ if [ -z "$SCORES_DB_PASSWORD" ]; then 
+    echo "When BUILD_INSPECTION_INFRASTRUCTURE is set, then SCORES_DB_PASSWORD must also be provided. Application will exit."
     exit
  fi
 fi
@@ -111,7 +111,7 @@ else
  RED='\033[1;31m'
  NC='\033[0m'
  echo -e ${RED} 
- read -n 1 -r -s -p $"Press Enter to create the envrionment or Ctrl-C to quit and change environment variables"
+ read -n 1 -r -s -p $"Press Enter to create the environment or Ctrl-C to quit and change environment variables"
  echo -e ${NC} 
 fi
 
@@ -180,8 +180,9 @@ echo "Writing connections strings and secrets to $functionAppName configuration"
 
 # update Function App Settings
 az webapp config appsettings set -g $resourceGroupName -n $functionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString StagingStorageAccountConnectionString=$stagingStorageAccountConnectionString TeamName=$teamName RecognizerApiKey=$recognizerApiKey IncomingDocumentServiceBusConnectionString=$serviceBusConnectionString IncomingDocumentsQueue=$docQueueName TrainingQueue=$trainingQueueName CosmosAuthorizationKey=$cosmosAuthorizationKey RecognizerServiceBaseUrl=$frEndpoint CosmosEndPointUrl=$cosmosEndpointUrl CosmosDatabaseId=HorusDb CosmosContainerId=ParsedDocuments ProcessingEngineAssembly=$processingEngineAssembly ProcessingEngineType=$processingEngineType PersistenceEngineAssembly=$ersistenceEngineAssembly PersistenceEngineType=$persistenceEngineType IntegrationEngineAssembly=$ersistenceEngineAssembly IntegrationEngineType=$persistenceEngineType "SQLConnectionString=$sqlConnectionString"
-
-if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then 
+# Server=tcp:horus-scores-db-server.database.windows.net,1433;Initial Catalog=horus-scores-db;Persist Security Info=False;User ID=horus-scores-admin;Password=Boldmere1883@@@;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then
+ scoresDbAdminUser="horus-scores-admin"
  echo "Building additional infrastructure to host inspection functions...."
  inspectionFunctionAppName="$applicationName-inspect"
  echo "inspectionFunctionAppName=$inspectionFunctionAppName"
@@ -192,8 +193,8 @@ if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then
  az functionapp create  --name $inspectionFunctionAppName   --storage-account $inspectionWebjobStorageAccountName   --consumption-plan-location $location   --resource-group $resourceGroupName --functions-version 3
  # Build Generator SQL connecion string
  baseGeneratorDbConnectionString=$(az sql db show-connection-string -c ado.net -s horus-generator-server -n horus-generator-db -o tsv)
- generatorDbConnectionStringWithUser="${baseGeneratorDbConnectionString/<username>/nick}"
- generatorSQLConnectionString="${generatorDbConnectionStringWithUser/<password>/$GENERATOR_DB_PASSWORD}"
+ generatorDbConnectionStringWithUser="${baseGeneratorDbConnectionString/<username>/$scoresDbAdminUser}"
+ generatorSQLConnectionString="${generatorDbConnectionStringWithUser/<password>/$SCORES_DB_PASSWORD}"
  # update Function App Settings
  echo "Writing connections strings and secrets to $inspectionFunctionAppName configuration"
  az webapp config appsettings set -g $resourceGroupName -n $inspectionFunctionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString TeamName=$teamName TrainingStorageAccountConnectionString=$trainingStorageAccountConnectionString "SQLConnectionString=$sqlConnectionString" DocumentTypesForChallenge="abc,nouryon,oscorp" "GeneratorSQLConnectionString=$generatorSQLConnectionString"

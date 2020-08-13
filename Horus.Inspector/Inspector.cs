@@ -20,14 +20,67 @@ namespace Horus.Inspector
         private readonly List<ScoreRecord> records;
         private static readonly CloudBlobClient trainingBlobClient = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("TrainingStorageAccountConnectionString")).CreateCloudBlobClient();
         static readonly CloudBlobClient orchestrationBlobClient = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("OrchestrationStorageAccountConnectionString")).CreateCloudBlobClient();
-        public static readonly string sqlConnectionString = Environment.GetEnvironmentVariable("GeneratorSQLConnectionString");
+        public static readonly string sqlConnectionString = Environment.GetEnvironmentVariable("ScoresSQLConnectionString");
         public static readonly string teamName = Environment.GetEnvironmentVariable("TeamName");
         public Inspector(ILogger log)
         {
             this.log = log;
             this.records = new List<ScoreRecord>();
+            CheckAndCreateDatabaseIfNecessary(log);
         }
 
+        private void CheckAndCreateDatabaseIfNecessary(ILogger log)
+        {
+            using (SqlConnection connection = new SqlConnection(sqlConnectionString))
+            {
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                SqlDataReader reader;
+                command.Connection = connection;
+                command.CommandText = "select name from sysobjects where name = 'ScoreSummary'";
+                using (reader = command.ExecuteReader())
+                {
+                    if (reader.HasRows)
+                    {
+                        log.LogTrace("Table ScoreSummary exists no need to create database tables");
+                        return;
+                    }
+                }
+
+                log.LogInformation($"Creating tables in {connection.Database} database ..");
+                SqlTransaction transaction = connection.BeginTransaction("InitializeDatabase");
+                command.Transaction = transaction;
+
+                var commandStr = "If not exists (select name from sysobjects where name = 'GeneratedDocuments')" +
+                 "CREATE TABLE[dbo].[GeneratedDocuments]([Id][int] IDENTITY(1, 1) NOT NULL, [Account] [nvarchar](50) NULL, [SingleName] [nvarchar](50) NULL, [AddressLine1] [nvarchar](50) NULL, [AddressLine2] [nvarchar](50) NULL, " +
+                 "[PostalCode] [nvarchar](50) NULL, [City] [nvarchar](50) NULL, [Notes] [nvarchar](50) NULL, [DocumentNumber] [nvarchar](50) NOT NULL, [FileName] [nvarchar](50) NULL, [DocumentFormat] [nvarchar](50) NULL, " +
+                 "[DocumentDate] [datetime2](7) NULL, [PreTaxTotalValue] [decimal](19, 5) NULL, [TaxTotalValue] [decimal](19, 5) NULL, [ShippingTotalValue] [decimal](19, 5) NULL, [GrandTotalValue]  [decimal](19, 5) NULL, [LineNumber] [nvarchar](5) NOT NULL, " +
+                 "[Title] [nvarchar](50) NULL, [Author] [nvarchar](50) NULL, [Isbn] [nvarchar](50) NULL, [Quantity] [decimal](19, 5) NULL, [Discount] [decimal](19, 5) NULL, [Price] [decimal](19, 5) NULL, [Taxable] [bit] NOT NULL, " +
+                 "[GoodsValue] [decimal](19, 5) NULL, [DiscountValue] [decimal](19, 5) NULL,	[DiscountedGoodsValue] [decimal](19, 5) NULL, [TaxableValue] [decimal](19, 5) NULL " +
+                 "PRIMARY KEY CLUSTERED ([Id] ASC)WITH(STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON[PRIMARY]) ON[PRIMARY]";
+                command.CommandText = commandStr;
+                command.ExecuteNonQuery();
+                log.LogTrace($"Table GeneratedDocuments was created.");
+
+                commandStr = "If not exists (select name from sysobjects where name = 'ScoreSummary')" +
+                 "CREATE TABLE[dbo].[ScoreSummary]([Id][int] IDENTITY(1, 1) NOT NULL, " +
+                 "[Team] [nvarchar](50) NOT NULL, [TotalScore][int] NOT NULL, [InspectionTime] [datetime2](7) NOT NULL " +
+                 "PRIMARY KEY CLUSTERED ([Id] ASC)WITH(STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON[PRIMARY]) ON[PRIMARY]";
+                command.CommandText = commandStr;
+                command.ExecuteNonQuery();
+                log.LogTrace($"Table ScoreSummary was created.");
+
+                commandStr = "If not exists (select name from sysobjects where name = 'ScoreDetail')" +
+                "CREATE TABLE[dbo].[ScoreDetail]([Id][int] IDENTITY(1, 1) NOT NULL, " +
+                "[Team][nvarchar](50) NOT NULL, [InspectionTime] [datetime2](7) NOT NULL, [Type] [nvarchar](50) NOT NULL, [Notes] [nvarchar] (max)NULL, [Score] [int] NOT NULL, [Status] [nvarchar](15)  NOT NULL " +
+                "PRIMARY KEY CLUSTERED ([Id] ASC)WITH(STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON[PRIMARY]) ON[PRIMARY]";
+                command.CommandText = commandStr;
+                command.ExecuteNonQuery();
+                log.LogTrace($"Table ScoreDetail was created.");
+
+               transaction.Commit();
+            }
+        }
 
         public async Task<List<ScoreRecord>> Inspect() 
         {
@@ -155,8 +208,7 @@ namespace Horus.Inspector
                             };
                             checkRequest.Lines.Add(line);
                         }
-
-                        checks.Add(checkRequest);
+                        if (checkRequest != null) checks.Add(checkRequest);
 
                     }
                     catch (Exception e) 
