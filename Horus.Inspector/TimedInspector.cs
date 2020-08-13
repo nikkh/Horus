@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
@@ -9,12 +10,14 @@ namespace Horus.Inspector
     {
         
         [FunctionName("TimedInspector")]
-        public static void Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, ILogger log)
+        public static async Task  Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, ILogger log)
         {
-            
 
-            
-            log.LogInformation($"Inspector Function triggered by Timer at: {DateTime.Now}");
+            var responseMessage = $"Inspector Function triggered by HttpRequest at: {DateTime.Now}";
+            log.LogInformation(responseMessage);
+
+            var inspector = new Inspector(log);
+            _ = await inspector.Inspect();
 
         }
     }
