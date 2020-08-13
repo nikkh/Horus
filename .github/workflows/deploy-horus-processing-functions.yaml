@@ -1,7 +1,7 @@
-name: Deploy Horus Application
+name: Deploy Horus Processing Functions
 env:
    LOCATION: uksouth
-   APPLICATION_NAME: horus
+   APPLICATION_NAME: ahorus
 on: [workflow_dispatch]
       
 jobs:
