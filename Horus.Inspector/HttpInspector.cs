@@ -27,7 +27,7 @@ namespace Horus.Inspector
             var inspector = new Inspector(log);
             var results = await inspector.Inspect();
 
-            return new OkObjectResult($"Inspector: You have a score of {results.Sum(s => s.Score)}\\n{ JsonConvert.SerializeObject(results)}");
+            return new OkObjectResult($"Inspector: You have a score of {results.Sum(s => s.Score)}");
         }
     }
 }

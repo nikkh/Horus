@@ -13,7 +13,7 @@ namespace Horus.Inspector
         public static async Task  Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, ILogger log)
         {
 
-            var responseMessage = $"Inspector Function triggered by HttpRequest at: {DateTime.Now}";
+            var responseMessage = $"Inspector Function triggered by Timer at: {DateTime.Now}";
             log.LogInformation(responseMessage);
 
             var inspector = new Inspector(log);

@@ -10,6 +10,7 @@ using System.Globalization;
 using Horus.Functions.Data;
 using System.Data.SqlClient;
 using Horus.Functions.Models;
+using System.Diagnostics;
 
 namespace Horus.Inspector
 {
@@ -95,9 +96,11 @@ namespace Horus.Inspector
             records.AddRange(await InspectProcessingOrchestrations());
             records.AddRange(await CountProcessedDocuments(log));
             records.AddRange(await CheckIndividualDocuments(log));
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             UpdateDatabase(records);
+            log.LogInformation($"Database update for {records.Count} records took {stopwatch.ElapsedMilliseconds} ms");
             return records;
-
         }
 
         private void UpdateDatabase(List<ScoreRecord> records)
@@ -238,7 +241,7 @@ namespace Horus.Inspector
                 log.LogInformation($"Expected Results read from SQL database {connection.Database}");
             }
 
-            
+            log.LogInformation($"We will be checking the actual vs expected results for {checks.Count} documents");
             foreach (var check in checks)
             {
                 string fileName = $"{check.DocumentFormat}-{check.FileName}";
@@ -251,7 +254,7 @@ namespace Horus.Inspector
                 }
                 catch (Exception)
                 {
-                    log.LogWarning($"Unable to load document {fileName} from processing database - probably due to incorrectly recognised data.");
+                    log.LogWarning($"Unable to load document {fileName} from processing database.");
                     continue;
                 }
                 if (document == null) 
@@ -265,58 +268,147 @@ namespace Horus.Inspector
             return results;
         }
 
+           
+        private bool Compare<T>(string fileName, string field, T actual, T expected, ILogger log, bool round = false) 
+        {
+            Type theType = typeof(T);
+            log.LogTrace($"{fileName}-{field} ({theType.FullName}): Expected={expected}, Actual={actual}");
+            bool equal = false;
+            switch (theType.FullName)
+            {
+                case "System.String":
+                    if ((string)(object)actual == (string)(object)expected) equal = true;
+                     break;
+                case "System.DateTime":
+                    var actualDateTime = (DateTime)(object)actual;
+                    var expectedDateTime = (DateTime)(object)expected;
+                    if (actualDateTime.Date == expectedDateTime.Date) equal = true;
+                     break;
+                case "System.Double":
+                    var actualDouble = Math.Round((double)(object)actual, 2);
+                    var expectedDouble = Math.Round((double)(object)expected, 2);
+                    if (actualDouble == expectedDouble) equal = true;
+                    break;
+                case "System.Decimal":
+                    var actualDecimal = Math.Round((decimal)(object)actual, 2);
+                    var expectedDecimal = Math.Round((decimal)(object)expected, 2);
+                    if (actualDecimal == expectedDecimal) equal = true;
+                    break;
+                case "System.Int32":
+                    if ((Int32)(object)actual == (Int32)(object)expected) equal = true;
+                    break;
+                case "System.Int64":
+                    if ((Int64)(object)actual == (Int64)(object)expected) equal = true;
+                    break;
+                case "System.Boolean":
+                    if ((bool)(object)actual == (bool)(object)expected) equal = true;
+                    break;
+                default:
+                    throw new Exception($"Attempt to compare unsupported type {theType.FullName}");
+            }
+
+            if (equal) 
+            { 
+                log.LogTrace($"{fileName}-{field}: matches");
+                return true;
+            }
+            else 
+            { 
+                log.LogWarning($"{fileName}-{field} does not match.  You may wish to investigate?");
+                return false;
+            } 
+
+        }
+
         private List<ScoreRecord> CompareActualWithExpectedResults(Document actual, DocumentCheckRequest expected, ILogger log)
         {
-            log.LogTrace($"Checking accuracy of document {actual.DocumentNumber}");
+            int documentPoints = 0;
+
             var results = new List<ScoreRecord>();
 
-            log.LogTrace($"Document {actual.DocumentNumber} Account: Expected {expected.Account}, Actual {actual.Account}");
-            if (actual.Account == expected.Account)
-            {
-                log.LogTrace($"Document {actual.DocumentNumber} Account: points awarded for exact match");
-                results.Add(new ScoreRecord { Type = $"Processing", Notes = $"Account {actual.Account} was recognized correctly in document {expected.FileName} (5 points awarded)", Score = 5 });
-            }
-            else { log.LogTrace($"Document {actual.DocumentNumber} Account does not match"); }
+            log.LogTrace($"Checking accuracy of document {actual.FileName} header");
 
-            log.LogTrace($"Document {actual.DocumentNumber} GrandTotal: Expected {expected.GrandTotalValue}, Actual {actual.GrandTotal}");
-            if (Math.Round((double)actual.GrandTotal, 2) == Math.Round(expected.GrandTotalValue, 2))
-            {
-                log.LogTrace($"Document {actual.DocumentNumber} GrandTotal: points awarded for match after rounding");
-                results.Add(new ScoreRecord { Type = $"Processing", Notes = $"Grand Total {actual.GrandTotal} was recognized correctly in document {expected.FileName} (15 points awarded)", Score = 15 });
-            }
-            else { log.LogTrace($"Document {actual.DocumentNumber} GrandTotal does not match"); }
+            // There are 7 header fields to check.  We will identify those that match.
+            Dictionary<string, bool> matches = new Dictionary<string, bool> { { "Account", false },{ "GrandTotal", false }, { "ShippingTotal", false }, { "NetTotal", false }, { "VatAmount", false }, { "PostCode", false }, { "TaxDate", false } };
 
-            log.LogTrace($"Document {actual.DocumentNumber} ShippingTotal: Expected {expected.ShippingTotalValue}, Actual {actual.ShippingTotal}");
-            if (Math.Round((double)actual.ShippingTotal, 2) == Math.Round(expected.ShippingTotalValue, 2))
-            {
-                log.LogTrace($"Document {actual.DocumentNumber} ShippingTotal: points awarded for match after rounding");
-                results.Add(new ScoreRecord { Type = $"Processing", Notes = $"ShippingTotal {actual.ShippingTotal} was recognized correctly in document {expected.FileName} (15 points awarded)", Score = 15 });
-            }
-            else { log.LogTrace($"Document {actual.DocumentNumber} ShippingTotal does not match"); }
+            matches["Account"] = Compare<string>(actual.FileName, "Account", actual.Account, expected.Account, log);
+            matches["GrandTotal"] = Compare<decimal>(actual.FileName, "GrandTotal", actual.GrandTotal, (decimal) expected.GrandTotalValue, log);
+            matches["ShippingTotal"] = Compare<decimal>(actual.FileName, "ShippingTotal", actual.ShippingTotal, (decimal)expected.ShippingTotalValue, log);
+            matches["NetTotal"] = Compare<decimal>(actual.FileName, "NetTotal", actual.NetTotal, (decimal)expected.PreTaxTotalValue, log);
+            matches["VatAmount"] = Compare<decimal>(actual.FileName, "VatAmount", actual.VatAmount, (decimal)expected.TaxTotalValue, log);
+            matches["PostCode"] = Compare<string>(actual.FileName, "PostCode", actual.PostCode, expected.PostalCode, log);
+            matches["TaxDate"] = Compare<DateTime>(actual.FileName, "TaxDate", actual.TaxDate ?? DateTime.MinValue, expected.DocumentDate, log);
 
-            log.LogTrace($"Document {actual.DocumentNumber} NetTotal: Expected {expected.PreTaxTotalValue}, Actual {actual.NetTotal}");
-            if (Math.Round((double)actual.NetTotal, 2) == Math.Round(expected.PreTaxTotalValue, 2))
-            {
-                log.LogTrace($"Document {actual.DocumentNumber} NetTotal: points awarded for match after rounding");
-                results.Add(new ScoreRecord { Type = $"Processing", Notes = $"NetTotal {actual.NetTotal} was recognized correctly in document {expected.FileName} (15 points awarded)", Score = 15 });
-            }
-            else { log.LogTrace($"Document {actual.DocumentNumber} NetTotal does not match"); }
+            // A fully matched header is worth 20 points - so apportion that
+            int DOCUMENT_HEADER_POINTS = 20;
+            decimal numPossibleMatches = matches.Count();
+            decimal numMatches = matches.Where(m => m.Value == true).Count();
+            var successRate = numMatches / numPossibleMatches;
+            var points = (int) (DOCUMENT_HEADER_POINTS * successRate);
+            documentPoints = points;
+            string notes = $"Document {actual.FileName} Header matched {numMatches} of {numPossibleMatches} fields for a score of {points} / {DOCUMENT_HEADER_POINTS})";
+            log.LogInformation(notes);
+           
+            log.LogTrace($"Checking accuracy of document {actual.DocumentNumber} lines");
+            matches = new Dictionary<string, bool> { { "ItemDescription", false }, { "UnitPrice", false }, { "Taxableindicator", false }, { "LineQuantity", false }, { "NetAmount", false }, { "DiscountPercent", false }};
 
-            log.LogTrace($"Document {actual.DocumentNumber} VatAmount: Expected {expected.TaxTotalValue}, Actual {actual.VatAmount}");
-            if (Math.Round((double)actual.VatAmount, 2) == Math.Round(expected.TaxTotalValue, 2))
+            // 100 points for a fully matched document leaves 80 up for grabs: pro rata that over the expected lines
+            int DOCUMENT_LINES_POINTS = 80;
+            decimal DOCUMENT_LINE_POINTS = DOCUMENT_LINES_POINTS / expected.Lines.Count();
+            numPossibleMatches = matches.Count();
+            
+            foreach (var expLine in expected.Lines.OrderBy(o=>o.LineNumber))
             {
-                log.LogTrace($"Document {actual.DocumentNumber} VatAmount: points awarded for match after rounding");
-                results.Add(new ScoreRecord { Type = $"Processing", Notes = $"VatAmount {actual.VatAmount} was recognized correctly in document {expected.FileName} (15 points awarded)", Score = 15 });
+                var expLineNumber = expLine.LineNumber.PadLeft(2, '0');
+                log.LogTrace($"Checking Line {expLineNumber}");
+                DocumentLineItem actLine = null;
+                try
+                {
+                    actLine = actual.LineItems.Where(l => l.DocumentLineNumber == expLineNumber).Single();
+                }
+                catch (Exception)
+                {
+                    log.LogTrace($"{actual.FileName} Actual line matching {expLineNumber} does not exist - you may want to retrain your model?");
+                }
+                if (actLine != null)
+                {
+                    matches["ItemDescription"] = Compare<string>(actual.FileName, "ItemDescription"+ expLineNumber, actLine.ItemDescription, $"{expLine.ProductCode}{expLine.ProductDescription}".Trim(), log);
+                    matches["UnitPrice"] = Compare<decimal>(actual.FileName, "UnitPrice" + expLineNumber, actLine.UnitPrice, (decimal) expLine.Price, log);
+                    
+                    bool actTaxIndicator = false;
+                    if (!String.IsNullOrEmpty(actLine.Taxableindicator)) actTaxIndicator = true;
+                    matches["Taxableindicator"] = Compare<bool>(actual.FileName, "Taxableindicator" + expLineNumber, actTaxIndicator, expLine.Taxable, log);
+                  
+                    double actLineQuantity = 0;
+                    if (Double.TryParse(actLine.LineQuantity, out double res)) actLineQuantity = res;
+                    matches["LineQuantity"] = Compare<double>(actual.FileName, "LineQuantity" + expLineNumber, actLineQuantity, expLine.Quantity, log);
+                    if (!matches["LineQuantity"])
+                    {
+                        matches["LineQuantity"] = Compare<double>(actual.FileName, "CalculatedLineQuantity" + expLineNumber, (double) actLine.CalculatedLineQuantity, expLine.Quantity, log);
+                    }
+                    matches["NetAmount"] = Compare<decimal>(actual.FileName, "NetAmount" + expLineNumber, actLine.NetAmount, (decimal) expLine.DiscountedGoodsValue, log);
+                    matches["DiscountPercent"] = Compare<decimal>(actual.FileName, "DiscountPercent" + expLineNumber, actLine.DiscountPercent, (decimal)expLine.Discount, log);
+
+                    numMatches = matches.Where(m => m.Value == true).Count();
+                    successRate = (numMatches / numPossibleMatches);
+                    points = (int) (DOCUMENT_LINE_POINTS * successRate);
+                    documentPoints += points;
+                    notes = $"Document {actual.FileName} line {expLineNumber} matched {numMatches} of {numPossibleMatches} fields for a score of {points} / {DOCUMENT_LINE_POINTS})";
+                    log.LogInformation(notes);
+                }
+                else
+                {
+                    log.LogTrace($"{actual.FileName} Actual line matching {expLineNumber} does not exist - you may want to retrain your model?");
+                }
             }
 
-            log.LogTrace($"Document {actual.DocumentNumber} PostCode: Expected {expected.PostalCode}, Actual {actual.PostCode}");
-            if (actual.PostCode == expected.PostalCode)
+            notes = $"Document {actual.FileName} overall scored {documentPoints} / 100 points)";
+            if (documentPoints < 50)
             {
-                log.LogTrace($"Document {actual.DocumentNumber} PostCode: points awarded for match");
-                results.Add(new ScoreRecord { Type = $"Processing", Notes = $"PostCode {actual.PostCode} was recognized correctly in document {expected.FileName} (15 points awarded)", Score = 15 });
+                log.LogError(notes);
             }
-            else { log.LogTrace($"Document {actual.DocumentNumber} PostCode does not match"); }
-
+            else { log.LogInformation(notes); }
+            results.Add(new ScoreRecord { Type = $"Accuracy", Notes = notes, Score = documentPoints });
             return results;
         }
 
@@ -326,7 +418,7 @@ namespace Horus.Inspector
             log.LogTrace($"Checking for documents in SQL database");
             int numDocs = HorusSql.GetDocumentCount(log);
             log.LogTrace($"{numDocs} documents have been analysed and saved to SQL");
-            results.Add(new ScoreRecord { Type = $"Processing", Notes = $"{numDocs} documents were detected in SQL database (1 points each)", Score = numDocs * 3 });
+            results.Add(new ScoreRecord { Type = $"Processing", Notes = $"{numDocs} documents were detected in SQL database (3 points each)", Score = numDocs * 3 });
             return results;
         }
 
@@ -337,8 +429,8 @@ namespace Horus.Inspector
             var containers = await orchestrationBlobClient.ListContainersAsync();
             int score = containers.Count();
             log.LogTrace($"{score} orchestration containers were present");
-            if (score > 100) score = 100;
-            results.Add(new ScoreRecord { Type = $"Processing", Notes = $"{containers.Count()} processing orchestration containers were detected (1 point each, max 100)", Score = score });
+            if (score > 500) score = 500;
+            results.Add(new ScoreRecord { Type = $"Processing", Notes = $"{containers.Count()} processing orchestration containers were detected (1 point each, max 500)", Score = score });
             return results;
         }
 
@@ -356,7 +448,7 @@ namespace Horus.Inspector
                 if (containers.Where(c=>c.Name == item).Count() == 1)
                 {
                     log.LogTrace($"Container {item} has been created");
-                    results.Add(new ScoreRecord { Type = $"Training", Notes=$"Container for document type {item} was detected", Score = 10 / documentTypesForChallenge.Count }); 
+                    results.Add(new ScoreRecord { Type = $"Training", Notes=$"Container for document type {item} was detected", Score = 150 / documentTypesForChallenge.Count }); 
                 }
 
             }
@@ -392,11 +484,11 @@ namespace Horus.Inspector
                     if (name.ToLower().EndsWith(".fott"))
                     {
                         log.LogTrace($"Document {name} detected");
-                        results.Add(new ScoreRecord { Type = $"Training", Notes = $"Recognizer labelling project has been created {name}", Score = 50 });
+                        results.Add(new ScoreRecord { Type = $"Training", Notes = $"Recognizer labelling project has been created {name}", Score = 500 });
                     }
                 }
-                if (i>0) results.Add(new ScoreRecord { Type = $"Training", Notes = $"{i} raw documents for document type {item.Name} are present (2 points each)", Score = 2 * i});
-                if (j> 0) results.Add(new ScoreRecord { Type = $"Training", Notes = $"{j} labelled documents for document type {item.Name} are present (10 points each)", Score = 10 * j });
+                if (i>0) results.Add(new ScoreRecord { Type = $"Training", Notes = $"{i} raw documents for document type {item.Name} are present (10 points each)", Score = 10 * i});
+                if (j> 0) results.Add(new ScoreRecord { Type = $"Training", Notes = $"{j} labelled documents for document type {item.Name} are present (25 points each)", Score = 25 * j });
 
             }
             
@@ -416,7 +508,7 @@ namespace Horus.Inspector
                 if (mtr.DocumentFormat != null)
                 {
                     log.LogTrace($"Model {mtr.ModelId} has been registered for {documentType}");
-                    results.Add(new ScoreRecord { Type = $"Training", Notes = $"{mtr.ModelId} has been registered for document type {documentType}", Score = 100 });
+                    results.Add(new ScoreRecord { Type = $"Training", Notes = $"{mtr.ModelId} has been registered for document type {documentType}", Score = 500 });
                 }
             }
             return results;
