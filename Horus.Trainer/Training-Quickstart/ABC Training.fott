@@ -1,0 +1,1103 @@
+{
+    "sourceConnection": {
+        "providerOptions": {
+            "encrypted": "eyJjaXBoZXJ0ZXh0IjoiZTNiZDBjYTQ2N2YwZWIwNWFmOGJjY2I1ZDI1YzIyZWUyN2YwODk4ODI5NzMwZTAxYjQ0NjQ5YmQ4ZWRiNjgwZTgzMWI3OTkxYzExYzQ5YjAyMWQ4NGEzMjYzOTQ2NzdjNGNjZmZjODZhNmI4MDEzMDUyYmI2NzViZWM0M2E3MmVjYTNlYTYxMzdiMzRmMjhjMWYyNzRlNmZlZGE5OWQxOGVlZmI3NWEwZTgwZjhiOTZmNTYzOGIwMDVhM2EzZTM4MmVmZGE2OWRjODkxMzgzYWEzZWM0ZWViZGExMDE4ZmU3MzkzODcyZDI1Nzk2MmEyOWE0NzRkMjMyYjNhNmJkN2E5OTdlMDM0MGM4ODg2NGI4MWIyNmNhMjY5NmE4NDQ0N2U3MzNmNGIyZmEyZDg4ZTA5NDRkMTRmMDQ1MzhiMmE2OTlhNmJlMGM2NTcwNTI5YzY1OWRiMjViM2IwM2IzZThiNTI1NjE0OWJkZGNmMWQ0MTIyZmM2NDhjMmExMjI3Mzg2YmI2NmUwNjkxMGM4NTNjZmEwNDA0NDM5YTA0NDYiLCJpdiI6ImFmNTcxNTNlZGI3Yzk1YTg2ZTcwNDNlZDAzZjE4NGYyIn0="
+        },
+        "id": "lXb7pUVl5",
+        "name": "Horus - abc",
+        "providerType": "azureBlobStorage",
+        "description": "Horus - abc"
+    },
+    "name": "ABC Training",
+    "folderPath": "raw",
+    "apiUriBase": "https://uksouth.api.cognitive.microsoft.com/",
+    "apiKey": {
+        "encrypted": "eyJjaXBoZXJ0ZXh0IjoiMDg5ODkzN2MxNGM3NzhiZTA3N2VmNzNjZjA3MDQ4ODBhNWUyOThkN2QzMTYwZjNiYTE5YzQ5ZmJlOGNhOGUzNGRhMGRmNWM1ZTdhZWRmOGYwMDViZTA4NzZiZTBiY2QzIiwiaXYiOiI4YjA4N2RhNWZkYTVjZmI3N2E3NmYwNzNlZjg1ZDk4MiJ9"
+    },
+    "securityToken": "ABC Training Token",
+    "version": "2.0.0",
+    "id": "aCsir4eFN",
+    "tags": [
+        {
+            "name": "Inv",
+            "color": "#CC543A",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "TaxDate",
+            "color": "#7BA23F",
+            "type": "date",
+            "format": "dmy",
+            "documentCount": 5
+        },
+        {
+            "name": "AccountNo",
+            "color": "#58B2DC",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "PostCode",
+            "color": "#FFB11B",
+            "type": "string",
+            "format": "alphanumeric",
+            "documentCount": 5
+        },
+        {
+            "name": "Total",
+            "color": "#2E5C6E",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "VAT",
+            "color": "#A96360",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Shipping",
+            "color": "#D7C4BB",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "TotalIncVAT",
+            "color": "#8F77B5",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Drug01",
+            "color": "#EEA9A9",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Drug02",
+            "color": "#24936E",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Drug03",
+            "color": "#994639",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Drug04",
+            "color": "#BEC23F",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Drug05",
+            "color": "#26453D",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Drug06",
+            "color": "#FFBA84",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Drug07",
+            "color": "#376B6D",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Drug08",
+            "color": "#E3916E",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Drug09",
+            "color": "#4F726C",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Drug10",
+            "color": "#78C2C4",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Drug11",
+            "color": "#616138",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Drug12",
+            "color": "#2D6D4B",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Drug13",
+            "color": "#DAC9A6",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Drug14",
+            "color": "#884C3A",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Drug15",
+            "color": "#336774",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Drug16",
+            "color": "#373C38",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Drug17",
+            "color": "#F9BF45",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 1
+        },
+        {
+            "name": "Drug18",
+            "color": "#4A593D",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 0
+        },
+        {
+            "name": "Drug19",
+            "color": "#6A4028",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 0
+        },
+        {
+            "name": "Drug20",
+            "color": "#DDD23B",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 0
+        },
+        {
+            "name": "Qty01",
+            "color": "#8D742A",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Qty02",
+            "color": "#211E55",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Qty03",
+            "color": "#EB7A77",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Qty04",
+            "color": "#A5DEE4",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Qty05",
+            "color": "#AF5F3C",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Qty06",
+            "color": "#B47157",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Qty07",
+            "color": "#B54434",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Qty08",
+            "color": "#A8497A",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Qty09",
+            "color": "#C73E3A",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Qty10",
+            "color": "#0C4842",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Qty11",
+            "color": "#BDC0BA",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Qty12",
+            "color": "#CB1B45",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Qty13",
+            "color": "#6F3381",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Qty14",
+            "color": "#867835",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Qty15",
+            "color": "#FB9966",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Qty16",
+            "color": "#0089A7",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Qty17",
+            "color": "#9B6E23",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 1
+        },
+        {
+            "name": "Qty18",
+            "color": "#91AD70",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 0
+        },
+        {
+            "name": "Qty19",
+            "color": "#E87A90",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 0
+        },
+        {
+            "name": "Qty20",
+            "color": "#533D5B",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 0
+        },
+        {
+            "name": "Unit01",
+            "color": "#ADA142",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Unit02",
+            "color": "#7D532C",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Unit03",
+            "color": "#0D5661",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Unit04",
+            "color": "#787878",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Unit05",
+            "color": "#828282",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Unit06",
+            "color": "#ED784A",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Unit07",
+            "color": "#F7C242",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Unit08",
+            "color": "#D05A6E",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Unit09",
+            "color": "#F8C3CD",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Unit10",
+            "color": "#5E3D50",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Unit11",
+            "color": "#D7B98E",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Unit12",
+            "color": "#E98B2A",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Unit13",
+            "color": "#EFBB24",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Unit14",
+            "color": "#465D4C",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Unit15",
+            "color": "#64363c",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Unit16",
+            "color": "#876633",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Unit17",
+            "color": "#4E4F97",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 1
+        },
+        {
+            "name": "Unit18",
+            "color": "#FB966E",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 0
+        },
+        {
+            "name": "Unit19",
+            "color": "#A0674B",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 0
+        },
+        {
+            "name": "Unit20",
+            "color": "#8B81C3",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 0
+        },
+        {
+            "name": "Disc01",
+            "color": "#D75455",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Disc02",
+            "color": "#D19826",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Disc03",
+            "color": "#D9AB42",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Disc04",
+            "color": "#9E7A7A",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Disc05",
+            "color": "#985F2A",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Disc06",
+            "color": "#FFC408",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Disc07",
+            "color": "#622954",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Disc08",
+            "color": "#A28C37",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Disc09",
+            "color": "#5DAC81",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Disc10",
+            "color": "#E16B8C",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Disc11",
+            "color": "#EBB471",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Disc12",
+            "color": "#E8B647",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Disc13",
+            "color": "#A35E47",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Disc14",
+            "color": "#90B44B",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Disc15",
+            "color": "#DDA52D",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Disc16",
+            "color": "#CB4042",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Disc17",
+            "color": "#6A4C9C",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 1
+        },
+        {
+            "name": "Disc18",
+            "color": "#B9887D",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 0
+        },
+        {
+            "name": "Disc19",
+            "color": "#734338",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 0
+        },
+        {
+            "name": "Disc20",
+            "color": "#227D51",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 0
+        },
+        {
+            "name": "Taxable01",
+            "color": "#B17844",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 4
+        },
+        {
+            "name": "Taxable02",
+            "color": "#BA9132",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 1
+        },
+        {
+            "name": "Taxable03",
+            "color": "#554236",
+            "type": "string",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Taxable04",
+            "color": "#566C73",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 3
+        },
+        {
+            "name": "Taxable05",
+            "color": "#B07736",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 1
+        },
+        {
+            "name": "Taxable06",
+            "color": "#B55D4C",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 4
+        },
+        {
+            "name": "Taxable07",
+            "color": "#C1328E",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 3
+        },
+        {
+            "name": "Taxable08",
+            "color": "#F6C555",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 3
+        },
+        {
+            "name": "Taxable09",
+            "color": "#86C166",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 3
+        },
+        {
+            "name": "Taxable10",
+            "color": "#563F2E",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 0
+        },
+        {
+            "name": "Taxable11",
+            "color": "#0F4C3A",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 1
+        },
+        {
+            "name": "Taxable12",
+            "color": "#C99833",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 3
+        },
+        {
+            "name": "Taxable13",
+            "color": "#405B55",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 1
+        },
+        {
+            "name": "Taxable14",
+            "color": "#96632E",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 2
+        },
+        {
+            "name": "Taxable15",
+            "color": "#516E41",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 1
+        },
+        {
+            "name": "Taxable16",
+            "color": "#6E75A4",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 0
+        },
+        {
+            "name": "Taxable17",
+            "color": "#33A6B8",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 0
+        },
+        {
+            "name": "Taxable18",
+            "color": "#66327C",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 0
+        },
+        {
+            "name": "Taxable19",
+            "color": "#4B4E2A",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 0
+        },
+        {
+            "name": "Taxable20",
+            "color": "#E83015",
+            "type": "string",
+            "format": "no-whitespaces",
+            "documentCount": 0
+        },
+        {
+            "name": "Net01",
+            "color": "#6C6024",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Net02",
+            "color": "#9F353A",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Net03",
+            "color": "#C78550",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Net04",
+            "color": "#3A3226",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Net05",
+            "color": "#9A5034",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Net06",
+            "color": "#897D55",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Net07",
+            "color": "#F4A7B9",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Net08",
+            "color": "#6A8372",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 5
+        },
+        {
+            "name": "Net09",
+            "color": "#C18A26",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Net10",
+            "color": "#F0A986",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Net11",
+            "color": "#60373E",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Net12",
+            "color": "#268785",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Net13",
+            "color": "#572A3F",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 4
+        },
+        {
+            "name": "Net14",
+            "color": "#B68E55",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Net15",
+            "color": "#FAD689",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Net16",
+            "color": "#656765",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 3
+        },
+        {
+            "name": "Net17",
+            "color": "#954A45",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 1
+        },
+        {
+            "name": "Net18",
+            "color": "#0C0C0C",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 0
+        },
+        {
+            "name": "Net19",
+            "color": "#D9CD90",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 0
+        },
+        {
+            "name": "Net20",
+            "color": "#AB3B3A",
+            "type": "number",
+            "format": "not-specified",
+            "documentCount": 0
+        }
+    ],
+    "assets": {
+        "3d7b7a4e6487123b85917ad459a218c64e9a8bb876951648900d5a343d8c741f": {
+            "id": "3d7b7a4e6487123b85917ad459a218c64e9a8bb876951648900d5a343d8c741f",
+            "format": "pdf",
+            "state": 2,
+            "type": 5,
+            "name": "raw/INVOICE-30001.pdf",
+            "path": "https://horus23805train.blob.core.windows.net/abc/raw%2FINVOICE-30001.pdf?sv=2019-02-02&st=2020-08-13T15%3A17%3A03Z&se=2020-08-14T15%3A17%3A03Z&sr=c&sp=racwdl&sig=OskWIg45Ci4rSEFqbvzt4kp3jop%2B8pat%2Bcfd5va9pRE%3D",
+            "size": null
+        },
+        "641cc9b145325ad9cd2860d544c45afd6d26946ee3115cb73b51f51d0b1759f7": {
+            "id": "641cc9b145325ad9cd2860d544c45afd6d26946ee3115cb73b51f51d0b1759f7",
+            "format": "pdf",
+            "state": 2,
+            "type": 5,
+            "name": "raw/INVOICE-30002.pdf",
+            "path": "https://horus23805train.blob.core.windows.net/abc/raw%2FINVOICE-30002.pdf?sv=2019-02-02&st=2020-08-13T15%3A17%3A03Z&se=2020-08-14T15%3A17%3A03Z&sr=c&sp=racwdl&sig=OskWIg45Ci4rSEFqbvzt4kp3jop%2B8pat%2Bcfd5va9pRE%3D",
+            "size": null
+        },
+        "dafa030adae7dc1648fcec05b1d5984d0037223c778739b796b4ead908479969": {
+            "id": "dafa030adae7dc1648fcec05b1d5984d0037223c778739b796b4ead908479969",
+            "format": "pdf",
+            "state": 2,
+            "type": 5,
+            "name": "raw/INVOICE-30003.pdf",
+            "path": "https://horus23805train.blob.core.windows.net/abc/raw%2FINVOICE-30003.pdf?sv=2019-02-02&st=2020-08-13T15%3A17%3A03Z&se=2020-08-14T15%3A17%3A03Z&sr=c&sp=racwdl&sig=OskWIg45Ci4rSEFqbvzt4kp3jop%2B8pat%2Bcfd5va9pRE%3D",
+            "size": null
+        },
+        "24a1663c13772a15d2c0ea5f6081b59a03b0c9ba49ed27a61cabf9e9ddb854b3": {
+            "id": "24a1663c13772a15d2c0ea5f6081b59a03b0c9ba49ed27a61cabf9e9ddb854b3",
+            "format": "pdf",
+            "state": 2,
+            "type": 5,
+            "name": "raw/INVOICE-30004.pdf",
+            "path": "https://horus23805train.blob.core.windows.net/abc/raw%2FINVOICE-30004.pdf?sv=2019-02-02&st=2020-08-13T15%3A17%3A03Z&se=2020-08-14T15%3A17%3A03Z&sr=c&sp=racwdl&sig=OskWIg45Ci4rSEFqbvzt4kp3jop%2B8pat%2Bcfd5va9pRE%3D",
+            "size": null
+        },
+        "0453227beb9e2317b06986f9e6e5854092f6cc0a03debb43da63b1df89a2b43a": {
+            "id": "0453227beb9e2317b06986f9e6e5854092f6cc0a03debb43da63b1df89a2b43a",
+            "format": "pdf",
+            "state": 2,
+            "type": 5,
+            "name": "raw/INVOICE-30005.pdf",
+            "path": "https://horus23805train.blob.core.windows.net/abc/raw%2FINVOICE-30005.pdf?sv=2019-02-02&st=2020-08-13T15%3A17%3A03Z&se=2020-08-14T15%3A17%3A03Z&sr=c&sp=racwdl&sig=OskWIg45Ci4rSEFqbvzt4kp3jop%2B8pat%2Bcfd5va9pRE%3D",
+            "size": null
+        }
+    },
+    "lastVisitedAssetId": "0453227beb9e2317b06986f9e6e5854092f6cc0a03debb43da63b1df89a2b43a",
+    "trainRecord": {
+        "modelInfo": {
+            "modelId": "e6170184-cfdf-4616-b8f3-b0ed05a40d7a",
+            "createdDateTime": "2020-08-13T17:13:15Z"
+        },
+        "averageAccuracy": 0.717,
+        "accuracies": {
+            "AccountNo": 1,
+            "Disc01": 1,
+            "Disc02": 1,
+            "Disc03": 1,
+            "Disc04": 1,
+            "Disc05": 0.8,
+            "Disc06": 1,
+            "Disc07": 1,
+            "Disc08": 0.6,
+            "Disc09": 0.4,
+            "Disc10": 0.4,
+            "Disc11": 0.2,
+            "Disc12": 0.4,
+            "Disc13": 0.4,
+            "Disc14": 0.6,
+            "Disc15": 0.6,
+            "Disc16": 0.6,
+            "Disc17": 0.6,
+            "Disc18": 1,
+            "Disc19": 1,
+            "Disc20": 1,
+            "Drug01": 0.8,
+            "Drug02": 0.8,
+            "Drug03": 1,
+            "Drug04": 0.8,
+            "Drug05": 0.8,
+            "Drug06": 0.2,
+            "Drug07": 0.2,
+            "Drug08": 0,
+            "Drug09": 0.2,
+            "Drug10": 0.2,
+            "Drug11": 0.4,
+            "Drug12": 0.2,
+            "Drug13": 0.2,
+            "Drug14": 0.2,
+            "Drug15": 0.4,
+            "Drug16": 0.2,
+            "Drug17": 0.4,
+            "Drug18": 1,
+            "Drug19": 1,
+            "Drug20": 1,
+            "Inv": 1,
+            "Net01": 0.8,
+            "Net02": 1,
+            "Net03": 1,
+            "Net04": 0.8,
+            "Net05": 1,
+            "Net06": 0.6,
+            "Net07": 0.8,
+            "Net08": 0.6,
+            "Net09": 0.6,
+            "Net10": 0.4,
+            "Net11": 0.2,
+            "Net12": 0.6,
+            "Net13": 0.4,
+            "Net14": 0.6,
+            "Net15": 0.6,
+            "Net16": 0.6,
+            "Net17": 0.6,
+            "Net18": 1,
+            "Net19": 1,
+            "Net20": 1,
+            "PostCode": 1,
+            "Qty01": 1,
+            "Qty02": 0.8,
+            "Qty03": 1,
+            "Qty04": 1,
+            "Qty05": 0.8,
+            "Qty06": 1,
+            "Qty07": 1,
+            "Qty08": 0.8,
+            "Qty09": 0.6,
+            "Qty10": 0.6,
+            "Qty11": 0.6,
+            "Qty12": 0.6,
+            "Qty13": 0.4,
+            "Qty14": 0.2,
+            "Qty15": 0.6,
+            "Qty16": 0.6,
+            "Qty17": 0.6,
+            "Qty18": 1,
+            "Qty19": 1,
+            "Qty20": 1,
+            "Shipping": 0.8,
+            "Taxable01": 1,
+            "Taxable02": 0.8,
+            "Taxable03": 0.8,
+            "Taxable04": 1,
+            "Taxable05": 0.8,
+            "Taxable06": 0.8,
+            "Taxable07": 0.8,
+            "Taxable08": 0.4,
+            "Taxable09": 0.8,
+            "Taxable10": 1,
+            "Taxable11": 0.6,
+            "Taxable12": 0.8,
+            "Taxable13": 0.4,
+            "Taxable14": 1,
+            "Taxable15": 0.6,
+            "Taxable16": 1,
+            "Taxable17": 1,
+            "Taxable18": 1,
+            "Taxable19": 1,
+            "Taxable20": 1,
+            "TaxDate": 1,
+            "Total": 0.6,
+            "TotalIncVAT": 0.8,
+            "Unit01": 1,
+            "Unit02": 0.8,
+            "Unit03": 1,
+            "Unit04": 1,
+            "Unit05": 0.8,
+            "Unit06": 1,
+            "Unit07": 0.8,
+            "Unit08": 0.8,
+            "Unit09": 0.6,
+            "Unit10": 0.6,
+            "Unit11": 0.4,
+            "Unit12": 0.2,
+            "Unit13": 0.2,
+            "Unit14": 0.2,
+            "Unit15": 0.6,
+            "Unit16": 0.6,
+            "Unit17": 0.6,
+            "Unit18": 1,
+            "Unit19": 1,
+            "Unit20": 1,
+            "VAT": 0.8
+        }
+    }
+}
