@@ -36,4 +36,63 @@ These actions are descibed briefly below - and you will need to make a few chang
 
 #### Processing Infrastructure
 
-This is the main action that creates all the necessary Azure resources to take part in the challenge.  It is defined in the [following workflow](/.github/workflows/processing-infra.yaml)
+This is the main action that creates all the necessary Azure resources to take part in the challenge.  It is defined in [this workflow](/.github/workflows/processing-infra.yaml).  You will see that ultimately this workflow runs a shall script (create_infra.sh) to create veryhting using the Azure CLI.  You can control what does and doesnt happen by setting environment variables pior to executing the actions.  There will be a full description to follow - and this is how you would deploy without taking part in the challenge), but for now we'll go for the simplest thing that could possibly work (assuming you are going to take part in the challenge).
+
+```
+on: [workflow_dispatch]
+ 
+name: Processing Infrastructure
+env:
+  APPLICATION_NAME: horus
+  LOCATION: uksouth  
+  SUPPRESS_CONFIRM: True
+  TEAM_NAME: Unity
+  BUILD_INSPECTION_INFRASTRUCTURE:  True
+  SCORES_APPLICATION_NAME: horus-scores
+  SCORES_DB_PASSWORD: ${{secrets.SCORES_DB_PASSWORD}}
+  SQL_ALLOW_MY_IP: 92.238.162.45
+  PERSISTENCE_ENGINE_TYPE: Engines.SqlPersistenceEngine 
+
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+```
+
+You can leave most of this set to default values - but you do need to pay attention tot he following:
+
+_APPLICATION_NAME_
+This is the most important parameter.  It is a stem-name that prefixes all created resources.  (if you dont supply it, a name will be generated and all your resources will contain horrible random numbers in the names).  It is laso used as a prefix in storage account naming. Choose something alphameric, just letters and numbers without capitals or special characters, and unique enough that it wont be 'unavilable' when creating public endpoints.  You could try <your initials>horus<a random number>.
+
+_TEAM_NAME_
+Chose any team name you like - it's what you or your team will be called on the leaderboard.
+
+_SCORES_DB_PASSWORD_
+To take part in the challenge your application needs to be able to update the cores databse when it records your score.  Nick can supply this password when you agree to join the challenge.  (If you want to work through on your own then leave this variable unset but set BUILD_INSPECTION_INFRASTRUCTURE=FALSE which would deploy the horus application in 'independent mode') where it doesnt try to report scores.
+
+__SQL_ALLOW_MY_IP__
+If you enter a public IP address here for one of your machines that IP will get added to you Azure SQL DB firewall rules. IF you'd like to look at your data using (e.g. Sql Server Management studio) then you wont need to manually create a firewall rule to allow it. 
+
+#### Processing Functions
+
+This is a lot simpler! All it does is build and deploy all the main functions needed to hadle the document recognition training and processing workflows. It is defined in [this workflow](/.github/workflows/processing-functions.yaml).
+
+```
+name: Processing Functions
+env:
+   LOCATION: uksouth
+   APPLICATION_NAME: horus
+on: [workflow_dispatch]
+      
+jobs:
+  build-and-deploy:
+
+    runs-on: ubuntu-latest
+```
+
+___APPLICATION_NAME___
+
+Just make sure the APPLICATION_NAME in this file matches the one in you chose in *Processing Infrastructure* above.
+
+#### Inspection Functions
+
+Again simple! All it does is build and deploy the functions that analyse the state of your environemnt and calculate and report your scores. It is defined in [this workflow](/.github/workflows/inspection-functions.yaml).
