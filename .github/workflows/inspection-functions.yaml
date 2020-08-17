@@ -1,4 +1,4 @@
-name: Inspector Functions
+name: Inspector Functions 
 env:
    LOCATION: uksouth
    APPLICATION_NAME: horus
