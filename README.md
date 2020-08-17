@@ -36,4 +36,4 @@ These actions are descibed briefly below - and you will need to make a few chang
 
 #### Processing Infrastructure
 
-This is the main action that creates all the necessary Azure resources to take part in the challenge.  It is defined in the [following workflow](../../)
+This is the main action that creates all the necessary Azure resources to take part in the challenge.  It is defined in the [following workflow](/.github/workflows/processing-infra.yaml)
