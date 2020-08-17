@@ -69,7 +69,7 @@ Chose any team name you like - it's what you or your team will be called on the 
 _SCORES_DB_PASSWORD_
 To take part in the challenge your application needs to be able to update the cores databse when it records your score.  Nick can supply this password when you agree to join the challenge.  (If you want to work through on your own then leave this variable unset but set BUILD_INSPECTION_INFRASTRUCTURE=FALSE which would deploy the horus application in 'independent mode') where it doesnt try to report scores.
 
-__SQL_ALLOW_MY_IP__
+_SQL_ALLOW_MY_IP_
 If you enter a public IP address here for one of your machines that IP will get added to you Azure SQL DB firewall rules. IF you'd like to look at your data using (e.g. Sql Server Management studio) then you wont need to manually create a firewall rule to allow it. 
 
 #### Processing Functions
@@ -89,10 +89,10 @@ jobs:
     runs-on: ubuntu-latest
 ```
 
-___APPLICATION_NAME___
+_APPLICATION_NAME_
 
 Just make sure the APPLICATION_NAME in this file matches the one in you chose in *Processing Infrastructure* above.
 
 #### Inspection Functions
 
-Again simple! All it does is build and deploy the functions that analyse the state of your environemnt and calculate and report your scores. It is defined in [this workflow](/.github/workflows/inspection-functions.yaml).
+Again simple. All it does is build and deploy the functions that analyse the state of your environment and calculate and report your scores. It is defined in [this workflow](/.github/workflows/inspection-functions.yaml).
