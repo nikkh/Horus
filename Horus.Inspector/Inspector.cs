@@ -91,6 +91,7 @@ namespace Horus.Inspector
         public async Task<List<ScoreRecord>> Inspect() 
         {
             log.LogInformation($"Inspection started");
+            records.AddRange(await RewardGettingStarted());
             records.AddRange(await InspectTrainingStorage());
             records.AddRange(await InspectModelRegistration());
             records.AddRange(await InspectProcessingOrchestrations());
@@ -101,6 +102,15 @@ namespace Horus.Inspector
             UpdateDatabase(records);
             log.LogInformation($"Database update for {records.Count} records took {stopwatch.ElapsedMilliseconds} ms");
             return records;
+        }
+
+        private async Task<List<ScoreRecord>> RewardGettingStarted()
+        {
+            var results = new List<ScoreRecord>();
+            log.LogTrace($"Applying reqard fro getting started");
+            
+            results.Add(new ScoreRecord { Type = $"GettingStarted", Notes = $"You have a 250 reward for sucessfully completing Getting Started! ", Score = 250 });
+            return results;
         }
 
         private void UpdateDatabase(List<ScoreRecord> records)
