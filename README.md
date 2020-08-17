@@ -9,7 +9,7 @@ Horus can be used for the Horus challenge - where teams compete against each oth
 
 ## Getting started
 
-1. [Fork](https://github.com/login?return_to=%2Fnikkh%2FHorus) this repo
+By following these instructions you can join the Horus Challenge and have your team showing on the leaderboard in less than a couple of hours.
 
 ### Fork this repo
 Just click the Fork button on on the top right of this page, and you will get your own personal copy in your GitHub account, then simply clone it and you’re good to go.
@@ -26,8 +26,14 @@ Then create GitHub secret called AZURE_CREDENTIALS and paste the json content ge
                             
 ### Change deployment parameters
 
-There are three workflows that you will need to run:
+There are three actions that you will need to run:
 
-1. Run Processing Infrastructure action (creates all necessary Azure resources)
-2. Run Deploy Functions action
-3. Run Deploy Inspector action
+1. Processing Infrastructure action
+2. Deploy Functions action
+3. Deploy Inspector action
+
+These actions are descibed briefly below - and you will need to make a few changes to eniornment parameters in the workflow files for the actions to get everything set-up.  These changes are also explained:
+
+#### Processing Infrastructure
+
+This is the main action that creates all the necessary Azure resources to take part in the challenge.  It is defined in the [following workflow]()
