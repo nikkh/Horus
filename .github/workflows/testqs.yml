@@ -22,7 +22,7 @@ jobs:
       with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           
-    - name: Install hugo + azcopy
+    - name: Install azcopy
       run: |
         echo "installing azcopy"
         sudo mkdir -p /home/azcopy/
