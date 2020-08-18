@@ -175,7 +175,7 @@ az storage cors add --connection-string $trainingStorageAccountConnectionString 
 # Setup quickstart training
 quickstartContainer=abc
 expiry=$(date --date="1 month" +%F)
-az storage container create -n abc  --connection-string $trainingStorageAccountConnectionString
+az storage container create -n $quickstartContainer  --connection-string $trainingStorageAccountConnectionString
 trainingSasToken=$(az storage container generate-sas -n $quickstartContainer --connection-string $trainingStorageAccountConnectionString --expiry $expiry --permissions acdlrw -o tsv)
 trainingContainerSasUri=$(az storage account show -n $trainingStorageAccountName --query primaryEndpoints.blob -o tsv)$quickstartContainer?$trainingSasToken
 azcopy cp Horus/Horus.Trainer/quickstart $trainingContainerSasUri --recursive=true --from-to LocalBlob
@@ -214,6 +214,6 @@ if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then
 fi
 
 echo -e "The random password generated for ${RED}$adminLogin${NC}, password was ${RED}$password${NC}"
-echo -e "The SAS Url for your training storage container abc is ${RED}$trainingContainerSasUri${NC}. You will need this for the custom labelling tool.
+echo -e "The SAS Url for your training storage container abc is ${RED}$trainingContainerSasUri${NC}. You will need this for the custom labelling tool"
 
     
