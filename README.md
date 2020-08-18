@@ -6,8 +6,6 @@ Is a forms recognition engine based on Microsoft Azure.  In simple terms, horus 
 
 Horus can be used for the Horus challenge - where teams compete against each other the get the highest quality recognition from a standard set of documents, or it can be used simply as a jump start for your own processing.  Currently these instructions are written for the challenge - but if you are interested in getting started on your own documents ASAP, then please contact me **nickdothillatmicrosoft.com** and I'll let you know how to go it alone. 
 
-If you'd like to give it a try see the [getting started guide](getting-started.md).
-
 # Overview
 
 ![architecture](images/horus-architecture.jpg)
@@ -45,7 +43,9 @@ Points are awarded for basic things - such as creating a container for training 
 
 In the challenge, the team with the mos accurately recognized documents is the winner.
 
+# Getting Started
 
+If you'd like to give it a try see the [getting started guide](getting-started.md).
 
 
 
