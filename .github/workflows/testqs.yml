@@ -21,7 +21,12 @@ jobs:
       uses: azure/login@v1
       with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-    # Runs a set of commands using the runners shell
+          
+    - uses: kheiakiyama/install-azcopy-action@v1
+      with:
+        version: 'v10'
+        creds: ${{ secrets.AZURE_CREDENTIALS }}  
+
     - name: Run a multi-line script
       run: |
         trainingStorageAccountConnectionString=$(az storage account show-connection-string -g $RG_NAME -n $SA_NAME -o tsv)
