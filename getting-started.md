@@ -90,4 +90,6 @@ Again simple. All it does is build and deploy the functions that analyse the sta
 
 ___If you run the three actions in the order described above (wait for the first to finsh before running the other two), then you should taking part in the challenge! If you sucessfully complete the getting started section then you automatically get 250 points and you are on your way!!___
 
-[What to do next? Read the hints](thechallenge.md)
+# What Next?
+
+If you have deployed your infrasructure and are ready to get started on training and processing then take a look at the [guidelines](guidelines.md).
