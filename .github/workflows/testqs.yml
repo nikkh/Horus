@@ -31,6 +31,7 @@ jobs:
     
     - name: Run a multi-line script
       run: |
+        ls
         trainingStorageAccountConnectionString=$(az storage account show-connection-string -g $RG_NAME -n $SA_NAME -o tsv)
         az storage container create -n $CNR_NAME --connection-string $trainingStorageAccountConnectionString
         trainingSasToken=$(az storage container generate-sas -n $CNR_NAME --connection-string $trainingStorageAccountConnectionString --expiry 2020-12-31 --permissions acdlrw -o tsv)
