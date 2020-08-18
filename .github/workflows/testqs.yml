@@ -22,7 +22,11 @@ jobs:
       with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           
-    
+
+    - uses: kheiakiyama/install-azcopy-action@v1
+      with:
+        version: 'v10'
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Run a multi-line script
       run: |
