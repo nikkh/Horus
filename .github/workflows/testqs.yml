@@ -22,10 +22,7 @@ jobs:
       with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           
-    - uses: kheiakiyama/install-azcopy-action@v1
-      with:
-        version: 'v10'
-        creds: ${{ secrets.AZURE_CREDENTIALS }}  
+    
 
     - name: Run a multi-line script
       run: |
@@ -33,4 +30,4 @@ jobs:
         az storage container create -n $CNR_NAME --connection-string $trainingStorageAccountConnectionString
         trainingSasToken=$(az storage container generate-sas -n $CNR_NAME --connection-string $trainingStorageAccountConnectionString --expiry 2020-12-31 --permissions acdlrw -o tsv)
         trainingContainerSasUri=$(az storage account show -n $SA_NAME --query primaryEndpoints.blob -o tsv)$CNR_NAME?$trainingSasToken
-        azcopy cp Horus/Horus.Trainer/quickstart $trainingContainerSasUri --recursive=true --from-to LocalBlob
+        azcopy copy Horus/Horus.Trainer/quickstart $trainingContainerSasUri --recursive=true --from-to LocalBlob
