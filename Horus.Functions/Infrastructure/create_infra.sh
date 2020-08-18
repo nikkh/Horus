@@ -171,9 +171,14 @@ storageAccountConnectionString=$(az storage account show-connection-string -g $r
 stagingStorageAccountConnectionString=$(az storage account show-connection-string -g $resourceGroupName -n $stagingStorageAccountName -o tsv)
 trainingStorageAccountConnectionString=$(az storage account show-connection-string -g $resourceGroupName -n $trainingStorageAccountName -o tsv)
 az storage cors add --connection-string $trainingStorageAccountConnectionString --origins '*' --methods DELETE GET HEAD MERGE POST OPTIONS PUT --allowed-headers '*' --exposed-headers '*' --max-age 200 --services b
+
+# Setup quickstart training
+quickstartContainer=abc
+expiry=$(date --date="1 month" +%F)
 az storage container create -n abc  --connection-string $trainingStorageAccountConnectionString
-trainingSasToken=$(az storage container generate-sas -n abc --connection-string $trainingStorageAccountConnectionString --expiry 2020-12-31 --permissions acdlrw -o tsv)
-trainingContainerSasUri=$(az storage account show -n $trainingStorageAccountName --query primaryEndpoints.blob -o tsv)abc?$trainingSasToken
+trainingSasToken=$(az storage container generate-sas -n $quickstartContainer --connection-string $trainingStorageAccountConnectionString --expiry $expiry --permissions acdlrw -o tsv)
+trainingContainerSasUri=$(az storage account show -n $trainingStorageAccountName --query primaryEndpoints.blob -o tsv)$quickstartContainer?$trainingSasToken
+azcopy cp Horus/Horus.Trainer/quickstart $trainingContainerSasUri --recursive=true --from-to LocalBlob
 
 frEndpoint=$(az cognitiveservices account show -g $resourceGroupName -n $frName --query properties.endpoint -o tsv)
 recognizerApiKey=$(az cognitiveservices account keys list -g $resourceGroupName -n $frName --query 'key1' -o tsv)
