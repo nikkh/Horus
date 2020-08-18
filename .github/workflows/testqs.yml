@@ -36,4 +36,4 @@ jobs:
         az storage container create -n $CNR_NAME --connection-string $trainingStorageAccountConnectionString
         trainingSasToken=$(az storage container generate-sas -n $CNR_NAME --connection-string $trainingStorageAccountConnectionString --expiry 2020-12-31 --permissions acdlrw -o tsv)
         trainingContainerSasUri=$(az storage account show -n $SA_NAME --query primaryEndpoints.blob -o tsv)$CNR_NAME?$trainingSasToken
-        azcopy copy Horus/Horus.Trainer/quickstart $trainingContainerSasUri --recursive=true --from-to LocalBlob
+        azcopy copy Horus.Trainer/quickstart $trainingContainerSasUri --recursive=true --from-to LocalBlob
