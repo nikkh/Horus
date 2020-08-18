@@ -22,12 +22,13 @@ jobs:
       with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           
-
-    - uses: kheiakiyama/install-azcopy-action@v1
-      with:
-        version: 'v10'
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
+    - name: Install hugo + azcopy
+      run: |
+        echo "installing azcopy"
+        sudo mkdir -p /home/azcopy/
+        curl -L https://aka.ms/downloadazcopy-v10-linux | tar -zxf - --directory /home/azcopy/
+        sudo mv $(find /home/azcopy/ -type f -name azcopy) /usr/bin/
+    
     - name: Run a multi-line script
       run: |
         trainingStorageAccountConnectionString=$(az storage account show-connection-string -g $RG_NAME -n $SA_NAME -o tsv)
