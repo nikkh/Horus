@@ -92,4 +92,5 @@ ___If you run the three actions in the order described above (wait for the first
 
 # What Next?
 
-If you have deployed your infrasructure and are ready to get started on training and processing then take a look at the [guidelines](guidelines.md).
+If you have deployed your infrasructure, familiarise yourself with the resources that were created in the [resource overview](resource-overview.md).
+Get some pointers on how to process in the [help](help).md document 
