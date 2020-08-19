@@ -27,7 +27,7 @@ These actions are descibed briefly below - and you will need to make a few chang
 
 ### Processing Infrastructure
 
-This is the main action that creates all the necessary Azure resources to take part in the challenge.  It is defined in [this workflow](/.github/workflows/processing-infra.yaml).  You will see that ultimately this workflow runs a shall script (create_infra.sh) to create veryhting using the Azure CLI.  You can control what does and doesnt happen by setting environment variables pior to executing the actions.  There will be a full description to follow - and this is how you would deploy without taking part in the challenge), but for now we'll go for the simplest thing that could possibly work (assuming you are going to take part in the challenge).
+This is the main action that creates all the necessary Azure resources to take part in the challenge.  It is defined in [this workflow](/.github/workflows/processing-infra.yaml).  You will see that ultimately this workflow runs a shell script (create_infra.sh) to create everything using the Azure CLI.  You can control what does and doesnt happen by setting environment variables pior to executing the actions.  For now we'll go for the simplest thing that could possibly work (assuming you are going to take part in the challenge).
 
 ```
 on: [workflow_dispatch]
@@ -49,19 +49,21 @@ jobs:
     runs-on: ubuntu-latest
 ```
 
-You can leave most of this set to default values - but you do need to pay attention tot he following:
+You can leave most of this set to default values - but you do need to pay attention to the following:
 
 _APPLICATION_NAME_
-This is the most important parameter.  It is a stem-name that prefixes all created resources.  (if you dont supply it, a name will be generated and all your resources will contain horrible random numbers in the names).  It is laso used as a prefix in storage account naming. Choose something alphameric, just letters and numbers without capitals or special characters, and unique enough that it wont be 'unavilable' when creating public endpoints.  You could try <your initials>horus<a random number>.
+This is the most important parameter.  It is a stem-name that prefixes all created resources.  (if you dont supply it, a name will be generated and all your resources will contain horrible random numbers in the names).  It is also used as a prefix in storage account naming. Choose something alphameric, just letters and numbers without capitals or special characters, and unique enough that it wont be 'unavailable' when creating public endpoints.  You could try <your initials>horus<a random number>.
 
 _TEAM_NAME_
 Chose any team name you like - it's what you or your team will be called on the leaderboard.
 
 _SCORES_DB_PASSWORD_
-To take part in the challenge your application needs to be able to update the cores databse when it records your score.  Nick can supply this password when you agree to join the challenge.  (If you want to work through on your own then leave this variable unset but set BUILD_INSPECTION_INFRASTRUCTURE=FALSE which would deploy the horus application in 'independent mode') where it doesnt try to report scores.
+To take part in the challenge your application needs to be able to update the cores database when it records your score.  Your challenge coach can supply this password when you agree to join the challenge.  
 
 _SQL_ALLOW_MY_IP_
-If you enter a public IP address here for one of your machines that IP will get added to you Azure SQL DB firewall rules. IF you'd like to look at your data using (e.g. Sql Server Management studio) then you wont need to manually create a firewall rule to allow it. 
+If you enter a public IP address here for one of your machines that IP will get added to you Azure SQL DB firewall rules. IF you'd like to look at your data using (e.g. Sql Server Management Studio) then you wont need to manually create a firewall rule to allow it. 
+
+> If you want to get going yourself without taking part in a challenge - or if you want to run a private challenge for other teams please see the [resource overview](https://github.com/nikkh/Horus/blob/master/resource-overview.md#customisation-options-at-deployment-time)
 
 ### Processing Functions
 
@@ -90,4 +92,6 @@ Again simple. All it does is build and deploy the functions that analyse the sta
 
 ___If you run the three actions in the order described above (wait for the first to finsh before running the other two), then you should taking part in the challenge! If you sucessfully complete the getting started section then you automatically get 250 points and you are on your way!!___
 
-[What to do next? Read the hints](thechallenge.md)
+# What Next?
+
+If you have deployed your infrasructure, familiarise yourself with the resources that were created in the [resource overview](resource-overview.md). Then get some pointers on how to get up and running and process some documents in the [help](help.md). 
