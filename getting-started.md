@@ -52,18 +52,18 @@ jobs:
 You can leave most of this set to default values - but you do need to pay attention to the following:
 
 _APPLICATION_NAME_
-This is the most important parameter.  It is a stem-name that prefixes all created resources.  (if you dont supply it, a name will be generated and all your resources will contain horrible random numbers in the names).  It is laso used as a prefix in storage account naming. Choose something alphameric, just letters and numbers without capitals or special characters, and unique enough that it wont be 'unavilable' when creating public endpoints.  You could try <your initials>horus<a random number>.
+This is the most important parameter.  It is a stem-name that prefixes all created resources.  (if you dont supply it, a name will be generated and all your resources will contain horrible random numbers in the names).  It is also used as a prefix in storage account naming. Choose something alphameric, just letters and numbers without capitals or special characters, and unique enough that it wont be 'unavailable' when creating public endpoints.  You could try <your initials>horus<a random number>.
 
 _TEAM_NAME_
 Chose any team name you like - it's what you or your team will be called on the leaderboard.
 
 _SCORES_DB_PASSWORD_
-To take part in the challenge your application needs to be able to update the cores databse when it records your score.  Nick can supply this password when you agree to join the challenge.  (If you want to work through on your own then leave this variable unset but set BUILD_INSPECTION_INFRASTRUCTURE=FALSE which would deploy the horus application in 'independent mode') where it doesnt try to report scores.
+To take part in the challenge your application needs to be able to update the cores database when it records your score.  Your challenge coach can supply this password when you agree to join the challenge.  
 
 _SQL_ALLOW_MY_IP_
-If you enter a public IP address here for one of your machines that IP will get added to you Azure SQL DB firewall rules. IF you'd like to look at your data using (e.g. Sql Server Management studio) then you wont need to manually create a firewall rule to allow it. 
+If you enter a public IP address here for one of your machines that IP will get added to you Azure SQL DB firewall rules. IF you'd like to look at your data using (e.g. Sql Server Management Studio) then you wont need to manually create a firewall rule to allow it. 
 
->> If you want to get going yourself without taking part in a challenge - or if you want to run a provate challenge for other teams please see
+> If you want to get going yourself without taking part in a challenge - or if you want to run a private challenge for other teams please see the [resource overview](https://github.com/nikkh/Horus/blob/master/resource-overview.md#customisation-options-at-deployment-time)
 
 ### Processing Functions
 
