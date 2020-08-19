@@ -57,9 +57,10 @@ The main deployment script *create_infra.sh* which creates the resources needed 
 | PERSISTENCE_ENGINE_* | The assembly and type containing the class that will be used to save documents.  You can replace the default persistence | Horus.Functions / Engines.CosmosPersistenceEngine (but overidden by setting to Engines.SqlPersistenceEngine in GitHub action) | 
 | INTEGRATION_ENGINE_* | The assembly and type containing the class that is invoked at the end of the processing workflow. Currently this doesnt do anything - but you could create a logic app that posted the document to SAP (or anything else you cna think of).  | Horus.Functions / Engines.HorusIntegrationEngine | 
 | BUILD_INSPECTION_INFRASTRUCTURE | Controls whether the inspection and scoreboard infrastructure is built | any value is treated as true | 
-| SCORES_APPLICATION_NAME | The name of the application  |  . |
-| SCORES_DB_PASSWORD | . |  . |
+| SCORES_APPLICATION_NAME | Mandatory if BUILD_INSPECTION_INFRASTRUCTURE is set. The name of the scores application you wish your scores to be sent to.  This is provided by the coach for the challenge.  |  None |
+| SCORES_DB_PASSWORD | Mandatory if BUILD_INSPECTION_INFRASTRUCTURE is set. The password for the scored database admin user.  This is be provided by the coach for the challenge. |  None |
 
+> If you dont have a SCORES_APPLICATION_NAME or SCORES_DB_PASSWORD then you have two choises (either deploy BUILD_PRODUCTION_INFRASTRUCTURE unset - everyhting else should still work as described, but you wont appear on any leaderboard, or you can run the 4th GitHub action to deploy your own scores application.
 
 
 
