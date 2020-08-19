@@ -53,10 +53,12 @@ Post that body to the following url:
 
 `https://app-func.azurewebsites.net/api/HttpTrainRequest?code="your function code"`
 
-This will post a message onto the training-requests queue and cause a model to be trained based on the traaining assets in your training stroage account.  Once the model is successfully trained, a record is kept as control data in the application Sql DB and this newly trained model will be used for all subsequent document processing / recognition  for this document type (unless the model is retrained using a snother similr request).
+This will post a message onto the training-requests queue and cause a model to be trained based on the traaining assets in your training stroage account.  Once the model is successfully trained, a record is kept as control data in the application Sql DB and this newly trained model will be used for all subsequent document processing / recognition  for this document type (unless the model is retrained using another similar request).
 
 ## Submit some 'Previously Unseen' documents
 
-Once your model has been trained for a particular document format, then you are ready to process some previously unseen document.  This have not been used as part of the training cycle and can now be recognized and processed automatically.
+Once your model has been trained for a particular document format, then you are ready to process some previously unseen documents.  These documents have not been used as part of the training cycle and can now be recognized and processed automatically, ven though they have never been seen before.  ___This is the eseence of the value of Forms Recognizer___. You train a model for each type (format) of document that you recieve, and then all future documents of that type can be recognised automatically.
+
+Let's get going.  You will remember from the description of resources that there is a stagin storage account automatically created by the deployment.
 
 
