@@ -361,22 +361,6 @@ namespace Horus.Functions
             log.LogInformation($"{snip} Completed successfully");
             return job;
         }
-       
-
-        #region not used
-        [FunctionName("Duracell_HttpStart")]
-        public async Task<HttpResponseMessage> HttpStart(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestMessage req,
-            [DurableClient] IDurableOrchestrationClient starter,
-            ILogger log)
-        {
-            // Function input comes from the request content.
-            string instanceId = await starter.StartNewAsync("Duracell", null);
-            log.LogDebug($"Started orchestration with ID = '{instanceId}'.");
-            return starter.CreateCheckStatusResponse(req, instanceId);
-        }
-
-        #endregion
 
         #region helpers
 

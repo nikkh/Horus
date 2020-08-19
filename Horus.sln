@@ -14,8 +14,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Horus.Functions", "Horus.Functions\Horus.Functions.csproj", "{D26E7FFE-A2A9-4213-971E-21C0A78988C9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Horus.Trainer", "Horus.Trainer\Horus.Trainer.csproj", "{A2D7E56A-5167-4CDC-9343-62CA496810D5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Horus.Generator", "Horus.Generator\Horus.Generator.csproj", "{D9828403-84AF-41E5-A785-6625750E91BF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Horus.Inspector", "Horus.Inspector\Horus.Inspector.csproj", "{82DAAA31-CDB4-4C17-A06B-085DB465BB57}"
@@ -30,10 +28,6 @@ Global
 		{D26E7FFE-A2A9-4213-971E-21C0A78988C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D26E7FFE-A2A9-4213-971E-21C0A78988C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D26E7FFE-A2A9-4213-971E-21C0A78988C9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A2D7E56A-5167-4CDC-9343-62CA496810D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A2D7E56A-5167-4CDC-9343-62CA496810D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A2D7E56A-5167-4CDC-9343-62CA496810D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A2D7E56A-5167-4CDC-9343-62CA496810D5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D9828403-84AF-41E5-A785-6625750E91BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D9828403-84AF-41E5-A785-6625750E91BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9828403-84AF-41E5-A785-6625750E91BF}.Release|Any CPU.ActiveCfg = Release|Any CPU

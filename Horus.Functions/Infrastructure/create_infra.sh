@@ -178,7 +178,7 @@ expiry=$(date --date="1 month" +%F)
 az storage container create -n $quickstartContainer  --connection-string $trainingStorageAccountConnectionString
 trainingSasToken=$(az storage container generate-sas -n $quickstartContainer --connection-string $trainingStorageAccountConnectionString --expiry $expiry --permissions acdlrw -o tsv)
 trainingContainerSasUri=$(az storage account show -n $trainingStorageAccountName --query primaryEndpoints.blob -o tsv)$quickstartContainer?$trainingSasToken
-azcopy copy Horus.Trainer/quickstart $trainingContainerSasUri --recursive=true --from-to LocalBlob
+azcopy copy Horus.Generator/quickstart $trainingContainerSasUri --recursive=true --from-to LocalBlob
 
 frEndpoint=$(az cognitiveservices account show -g $resourceGroupName -n $frName --query properties.endpoint -o tsv)
 recognizerApiKey=$(az cognitiveservices account keys list -g $resourceGroupName -n $frName --query 'key1' -o tsv)
