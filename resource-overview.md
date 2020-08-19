@@ -13,9 +13,9 @@ All the resources are created with structured names, based on the APPLICATION_NA
 | Type | Purpose | Name |
 | --------------- | --------------- | --------------- |
 | Resource Group | Single resource group containing all components of the solution | app-rg |
-| Storage Account | Orchestration storage account.  Holds state for each invocation in a separate container  | app<random1>-orch |
-| Storage Account | Staging storage account.  Provides 'drop' containers where incoming documents are uploaded or deposited. | app<random1>-stage |
-| Storage Account | Training storage account.  Contains training documents and intermediate assets | app<random1>-train |
+| Storage Account | Orchestration storage account.  Holds state for each invocation in a separate container  | app+random+orch |
+| Storage Account | Staging storage account.  Provides 'drop' containers where incoming documents are uploaded or deposited. | app+random+stage |
+| Storage Account | Training storage account.  Contains training documents and intermediate assets | app+random+train |
 | Function App | Durable functions that process documents in the Document PRocessing Workflow | app-func |
 | Azure SQL Database Server | Hosts processing database | app-db-server|
 | Azure SQL Database | Contains tables for stroing the processed documents and control information for processing | app-db |
@@ -49,8 +49,8 @@ The main deployment script *create_infra.sh* which creates the resources needed 
 
 | Variable | Purpose | Default |
 | --------------- | --------------- | ------------- |
-| APPLICATION_NAME | This is the name of the application and the root for the names of other resources created by the deployment. It is strongly recommended you set a unique alphameric string | h<random> | 
-| TEAM_NAME | Displays on the scoreboard |  team<random> |
+| APPLICATION_NAME | This is the name of the application and the root for the names of other resources created by the deployment. It is strongly recommended you set a unique alphameric string | h+random | 
+| TEAM_NAME | Displays on the scoreboard |  team+random |
 | LOCATION | Location where resources will be deployed |  uksouth |
 | SQL_ALLOW_MY_IP | Convenience.  An IP address to be added to SQL DB firewall - allows adding a dev machine for use of SQL Management Studio without visiting Azure portal or running an additional script | none | 
 | PROCESSING_ENGINE_* | The assembly and type containing the class that will be used to process documents.  You can replace the default processing | Horus.Functions / Engines.HorusProcessingEngine | 
