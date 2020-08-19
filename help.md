@@ -27,8 +27,10 @@ At this stage you should have a screen in your labelling tool that looks like th
 
 ![](images/labelling-tool-train-result.jpg)
 
-
+And it's time to submit a Training Request.
 
 ## Submit a Training Request
+
+Submitting a training request triggers the [model training workflow](https://github.com/nikkh/Horus#model-training) in the horus application.
 
 ## Submit some 'Previously Unseen' documents
