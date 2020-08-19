@@ -19,7 +19,7 @@ You'll need to create a labelling project (its not currently possible to automat
 
 3. Browse to http://localhost:3000
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This should load the custom labelling tool.  
+This should load the custom labelling tool.  
 
 ## Submit a Training Request
 
