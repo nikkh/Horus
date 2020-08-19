@@ -60,7 +60,7 @@ The main deployment script *create_infra.sh* which creates the resources needed 
 | SCORES_APPLICATION_NAME | Mandatory if BUILD_INSPECTION_INFRASTRUCTURE is set. The name of the scores application you wish your scores to be sent to.  This is provided by the coach for the challenge.  |  None |
 | SCORES_DB_PASSWORD | Mandatory if BUILD_INSPECTION_INFRASTRUCTURE is set. The password for the scored database admin user.  This is be provided by the coach for the challenge. |  None |
 
-> If you dont have a SCORES_APPLICATION_NAME or SCORES_DB_PASSWORD then you have two choises (either deploy BUILD_PRODUCTION_INFRASTRUCTURE unset - everything else should still work as described, (but you wont appear on any leaderboard), or you can run the [provided GitHub action](.github/workflows/scores-infra.yaml) to deploy your own scores application, and run your own provate version of the challenge.
+> If you dont have a SCORES_APPLICATION_NAME or SCORES_DB_PASSWORD then you have two choices (either deploy BUILD_PRODUCTION_INFRASTRUCTURE unset - everything else should still work as described, (but you wont appear on any leaderboard), or you can run the [provided GitHub action](.github/workflows/scores-infra.yaml) to deploy your own scores application, and run your own private version of the challenge.
 
 
 
