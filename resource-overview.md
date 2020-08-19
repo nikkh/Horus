@@ -47,7 +47,7 @@ All configuration needed for the Horus Application to run is automatically set a
 The main deployment script *create_infra.sh* which creates the resources needed is configurable by setting environment variables in the GitHub action that invokes the script.  These variables and their purpose are described below:
 
 | Variable | Purpose | Default |
-| --------------- | --------------- | 
+| --------------- | --------------- | ------------- |
 | APPLICATION_NAME | . | . | 
 | TEAM_NAME | . |  . |
 | LOCATION | . |  . |
