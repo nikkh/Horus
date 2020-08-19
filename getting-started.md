@@ -92,5 +92,4 @@ ___If you run the three actions in the order described above (wait for the first
 
 # What Next?
 
-If you have deployed your infrasructure, familiarise yourself with the resources that were created in the [resource overview](resource-overview.md).
-Get some pointers on how to process in the [help](help).md document 
+If you have deployed your infrasructure, familiarise yourself with the resources that were created in the [resource overview](resource-overview.md). Then get some pointers on how to get up and running and process some documents in the [help](help.md). 
