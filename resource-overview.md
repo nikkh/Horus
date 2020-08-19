@@ -49,17 +49,15 @@ The main deployment script *create_infra.sh* which creates the resources needed 
 
 | Variable | Purpose | Default |
 | --------------- | --------------- | ------------- |
-| APPLICATION_NAME | . | . | 
-| TEAM_NAME | . |  . |
-| LOCATION | . |  . |
-| SQL_ALLOW_MY_IP | . | . | 
-| PROCESSING_ENGINE_ASSEMBLEY | . | . | 
-| PROCESSING_ASSEMBLY_TYPE | . |  . |
-| PERSISTENCE_ENGINE_ASSEMBLEY | . |  . |
-| PERSISTENCE_ENGINE_TYPE | . |  . |
-| INTEGRATION_ENGINE_ASSEMBLEY | . | . | 
-| INTEGRATION_ENGINE_TYPE | . |  . |
-| BUILD_INSPECTION_INFRASTRUCTURE | . | . | 
+| APPLICATION_NAME | This is the name of the application and the root for the names of other resources created by the deployment. It is strongly recommended you set a unique alphameric string | h<random> | 
+| TEAM_NAME | Displays on the scoreboard |  team<random> |
+| LOCATION | Location where resources will be deployed |  uksouth |
+| SQL_ALLOW_MY_IP | Convenience.  An IP address to be added to SQL DB firewall - allows adding a dev machine for use of SQL Management Studio without visiting Azure portal or running an additional script | none | 
+| PROCESSING_ENGINE_* | The assembly and type containing the class that will be used to process documents.  You can replace the default processing | Horus.Functions / Engines.HorusProcessingEngine | 
+| PERSISTENCE_ENGINE_* | The assembly and type containing the class that will be used to save documents.  You can replace the default persistence | Horus.Functions / Engines.CosmosPersistenceEngine (but overidden by setting to Engines.SqlPersistenceEngine in GitHub action) | 
+| INTEGRATION_ENGINE_* | The assembly and type containing the class that is invoked at the end of the processing workflow. Currently this doesnt do anything - but you could create a logic app that posted the document to SAP (or anything else you cna think of).  | Horus.Functions / Engines.HorusIntegrationEngine | 
+| BUILD_INSPECTION_INFRASTRUCTURE | Controls whether the inspection and scoreboard infrastructure is built | any value is treated as true | 
+| SCORES_APPLICATION_NAME | The name of the application  |  . |
 | SCORES_DB_PASSWORD | . |  . |
 
 
