@@ -31,6 +31,32 @@ And it's time to submit a Training Request.
 
 ## Submit a Training Request
 
-Submitting a training request triggers the [model training workflow](https://github.com/nikkh/Horus#model-training) in the horus application.
+Submitting a training request triggers the [model training workflow](https://github.com/nikkh/Horus#model-training) in the horus application. The simplest way to submit a request is do so by sending an http POST message to the processing function app (app-func).  The function that triggers a training request is HttpTrainRequest.
+
+In order to send a requestr to an Azure funciton you need to send a security code as part of the request.  This code can be obtained from the Azure Portal as described in [this](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook-trigger?tabs=csharp#obtaining-keys) document.
+
+Using Postman or similar construct a body as follows:
+
+````
+{
+  "SasUrl": "your SasUrl as in the custom labelling project above",
+  "Items": [
+    {
+      "DocumentFormat": "abc",
+      "BlobFolder": "quickstart"
+    }
+  ]
+}
+````
+
+Post that body to the following url:
+
+`https://app-func.azurewebsites.net/api/HttpTrainRequest?code="your function code"`
+
+This will post a message onto the training-requests queue and cause a model to be trained based on the traaining assets in your training stroage account.  Once the model is successfully trained, a record is kept as control data in the application Sql DB and this newly trained model will be used for all subsequent document processing / recognition  for this document type (unless the model is retrained using a snother similr request).
 
 ## Submit some 'Previously Unseen' documents
+
+Once your model has been trained for a particular document format, then you are ready to process some previously unseen document.  This have not been used as part of the training cycle and can now be recognized and processed automatically.
+
+
