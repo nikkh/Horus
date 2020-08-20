@@ -96,7 +96,11 @@ Each of these options is breifly explained below:
 
 ## DocumentErrors Database Table
 
-This is the most basic meachanism for inspecting 
+This is the most basic mechanism for inspecting the processing results.  During processing the processor function reaches into the json output of the forms recogniser to pull fields for storage in the database.  if a field isnt correctly recognized, then very often it doesnt appear in the json output.  Other times a muber is recognised as containing characters.  This errors are logged to the DocumentErrors table:
+
+![screenshot of documenterrors table sql query](images/invoice-and-documenterrors.jpg)
+
+As can be seen from the above screenshot, a number of erros were encountered when processing the recognized json.  Many of these are flagged as warnings (for example the order number is null, but there is no order number on the input document so this can safely be ignored).  There are terminal errors too (for example element net09 does not exist int he recognized output).  Net09 is the price for line 9 - as can be seen line 9 is one of the lines where the product description wraps, could that be the reason?  Regardless we need to improve recognition accuracy here.
 
 ## Application Insights for Processing
 
