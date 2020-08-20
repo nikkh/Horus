@@ -85,8 +85,8 @@ Scores will be updated after a maximum of 5 minutes.  if you check the scoreboar
 
 There are a number of ways to understand what happened during recognition:
 
-1. Look at the document errors in the database
-2. Look at the job log for each individual processing run
+1. Look at the job log for each individual processing run
+2. Look at the document errors in the database
 3. Look at Application Inights for the processing run
 4. Lok at application insights for the scoreboard calculation (inspection)
 
@@ -94,8 +94,28 @@ Of there, items 1-3 are always available.  item is only available if you are tak
 
 Each of these options is breifly explained below:
 
-## DocumentErrors Database Table
 ## Job Log
+
+Every request to train a model or process a document is handled by a durable function.  Each execution instance of a durable function gets allocated a unique id.  All logs and interim assets that are used or produced by an instance are stored in a container within the app-random-orch storage account.  The following snip shows one of these orchestration containers:
+
+![image showing orchestration container](images/orchestrations.jpg)
+
+Each container stores the state for a single execution instance.  In this case the items are as follows:
+
+* abc-INVOICE-30014.pdf: This is the unchanged raw file that was uploaded and processed
+* abc-INVOICE-30014.pdf-document.json: This is a json representation of the document that was processed
+* abc-INVOICE-30014.pdf-recognized.json: This is the output from the Form Recognizer
+* abc-INVOICE-30014.pdf.processing.job.json: This is the interim working state of the process.
+
+.job.json files are an audit train of parameters
+
+## DocumentErrors Database Table
+
+This is the most basic meachanism for inspecting 
+
+
 ## Application Insights for Processing
 ## Application Insights for Inspection
+
+# Improving Recognition Accuracy
 
