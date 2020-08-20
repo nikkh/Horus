@@ -1,7 +1,7 @@
 name: Processing Functions
 env:
    LOCATION: uksouth
-   APPLICATION_NAME: spo0ons
+   APPLICATION_NAME: horus
 on: [workflow_dispatch]
       
 jobs:
