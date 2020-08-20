@@ -73,10 +73,23 @@ Scores will be updated after a maximum of 5 minutes.  if you check the scoreboar
 
 ![scoreboard](images/horus-scoreboard.jpg)
 
->Notice the hightlights documents on the scoreboard image - one has an accuracy of 97%, the other has 47%.  Why is this?  To identifying problems and improving 
+>Notice the hightlights documents on the scoreboard image - one has an accuracy of 97%, the other has 47%.  Why is this?  See the next section [Understanding what happened during the recognition process](https://github.com/nikkh/Horus/blob/master/help.md#understanding-what-happened-during-the-recognition-process) to learn more.
 
 # Understanding what happened during the recognition process
 
+There are a number of ways to understand what happened during recognition:
 
+1. Look at the document errors in the database
+2. Look at the job log for each individual processing run
+3. Look at Application Inights for the processing run
+4. Lok at application insights for the scoreboard calculation (inspection)
 
+Of there, items 1-3 are always available.  item is only available if you are taking part in a challenge or have deployed your own scorecard infrastructure.
+
+Each of these options is breifly explained below:
+
+## DocumentErrors Database Table
+## Job Log
+## Application Insights for Processing
+## Application Insights for Inspection
 
