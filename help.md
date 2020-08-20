@@ -85,14 +85,22 @@ Scores will be updated after a maximum of 5 minutes.  if you check the scoreboar
 
 There are a number of ways to understand what happened during recognition:
 
-1. Look at the job log for each individual processing run
-2. Look at the document errors in the database
-3. Look at Application Inights for the processing run
-4. Lok at application insights for the scoreboard calculation (inspection)
+1. Look at the Document Errors in the database
+2. Look at Application Insights for the processing run
+3. Look at the Job Log for each individual processing run
+4. Look at application insights for the scoreboard calculation (inspection)
 
 Of there, items 1-3 are always available.  item is only available if you are taking part in a challenge or have deployed your own scorecard infrastructure.
 
 Each of these options is breifly explained below:
+
+## DocumentErrors Database Table
+
+This is the most basic meachanism for inspecting 
+
+## Application Insights for Processing
+
+
 
 ## Job Log
 
@@ -109,13 +117,19 @@ Each container stores the state for a single execution instance.  In this case t
 
 .job.json files are an audit train of parameters
 
-## DocumentErrors Database Table
-
-This is the most basic meachanism for inspecting 
-
-
-## Application Insights for Processing
 ## Application Insights for Inspection
+
+By far the best way of understanding the accuracy of your document recognition is to query the Application Insights instance for the inspector component that calculates scores.  *The reason for this is that when documents are genrated for the challenge, expected results are written to the database - which means that every field can be checked for a partiular document run - and even slight errors in recognition are detected and logged*
+
+The Application Insights instance will be called *app-inspect*.  If you use application insights search to identify the document you are interested in, then you can look at extensive detail as to how that document fared in recognition:
+
+![horus application insights document search](images/horus-ai-search-document.jpg)
+
+In this case abc-INVOICE-30026 scored only 44 / 100.  Why was that?  Which fields were not recognized correctly?  If you scroll down you can see a full list of fields that weren't recognized correctly - if you click on an indivdual record you will see more details.
+
+
+
+
 
 # Improving Recognition Accuracy
 
