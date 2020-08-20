@@ -28,7 +28,7 @@ All the resources are created with structured names, based on the APPLICATION_NA
 
 ## Configuration and Connection Strings
 
-All configuration needed for the Horus Application to run is automatically set as part of the deployment (and can be seen in the Configuration for the processing fucntion app (<application name>-func.  Sometimes some aspectes of this configuration are nescessayr for develo (e.g. to put in local settings files).  They can be obtained from the configuration above.  The most commonly used ones should self-explanatory:
+All configuration needed for the Horus Application to run is automatically set as part of the deployment (and can be seen in the Configuration for the processing function app (app-func).  Sometimes, some aspects of this configuration are nescessay for development (e.g. to put in local settings files).  They can be obtained from the configuration above.  The most commonly used ones should self-explanatory:
  
 * OrchestrationStorageAccountConnectionString
 * StagingStorageAccountConnectionString
@@ -43,6 +43,59 @@ All configuration needed for the Horus Application to run is automatically set a
 * CosmosDatabaseId=HorusDb
 * CosmosContainerId
 * SqlConnectionString
+
+## Developing locally
+
+The settings files for the projects have been git-ignored.  If you would like to devleop locally you will need to add the following settings files (make sure they are git-ignored and copied to the bin directory on local build). The settings can be obtained by looking at the equivalent Azure configuration.
+
+### Horus.functions (local.settings.json)
+
+````
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "",
+    "IncomingDocumentServiceBusConnectionString": "",
+    "IncomingDocumentsQueue": "incoming-documents",
+    "TrainingQueue": "training-requests",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "",
+    "SQLConnectionString": "",
+    "StagingStorageAccountConnectionString": "",
+    "OrchestrationStorageAccountConnectionString": "",
+    "RecognizerServiceBaseUrl": "https://uksouth.api.cognitive.microsoft.com/",
+    "RecognizerApiKey": "",
+    "CosmosDatabaseId": "HorusDb",
+    "CosmosContainerId": "ParsedDocuments",
+    "CosmosEndPointUrl": "",
+    "CosmosAuthorizationKey": "",
+    "ProcessingEngineAssembly": "Horus.Functions",
+    "ProcessingEngineType": "Engines.HorusProcessingEngine",
+    "PersistenceEngineAssembly": "Horus.Functions",
+    "PersistenceEngineType": "Engines.SqlPersistenceEngine",
+    "IntegrationEngineAssembly": "Horus.Functions",
+    "IntegrationEngineType": "Engines.HorusIntegrationEngine"
+  }
+}
+````
+
+### Horus.Inspector (local.settings.json)
+
+````
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "TrainingStorageAccountConnectionString": "",
+    "DocumentTypesForChallenge": "abc,nouryon,oscorp",
+    "SQLConnectionString": "",
+    "TeamName": "",
+    "ScoresSQLConnectionString": "",
+    "OrchestrationStorageAccountConnectionString": ""
+  }
+}
+````
 
 ## Customisation Options at Deployment Time
 The main deployment script *create_infra.sh* which creates the resources needed is configurable by setting environment variables in the GitHub action that invokes the script.  These variables and their purpose are described below:
