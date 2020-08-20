@@ -96,11 +96,15 @@ Each of these options is breifly explained below:
 
 ## DocumentErrors Database Table
 
-This is the most basic meachanism for inspecting 
+This is the most basic mechanism for inspecting the processing results.  During processing the processor function reaches into the json output of the forms recogniser to pull fields for storage in the database.  if a field isnt correctly recognized, then very often it doesnt appear in the json output.  Other times a muber is recognised as containing characters.  This errors are logged to the DocumentErrors table:
+
+![screenshot of documenterrors table sql query](images/invoice-and-documenterrors.jpg)
+
+As can be seen from the above screenshot, a number of erros were encountered when processing the recognized json.  Many of these are flagged as warnings (for example the order number is null, but there is no order number on the input document so this can safely be ignored).  There are terminal errors too (for example element net09 does not exist int he recognized output).  Net09 is the price for line 9 - as can be seen line 9 is one of the lines where the product description wraps, could that be the reason?  Regardless we need to [improve recognition accuracy](https://github.com/nikkh/Horus/blob/master/help.md#improving-recognition-accuracy) here.
 
 ## Application Insights for Processing
 
-
+___Need to introduce application insights correlation for durable tasks here...___
 
 ## Job Log
 
@@ -127,9 +131,10 @@ The Application Insights instance will be called *app-inspect*.  If you use appl
 
 In this case abc-INVOICE-30026 scored only 44 / 100.  Why was that?  Which fields were not recognized correctly?  If you scroll down you can see a full list of fields that weren't recognized correctly - if you click on an indivdual record you will see more details.
 
-
-
-
-
 # Improving Recognition Accuracy
 
+We have noticed throughout that there are some problems with abc-INVOICE-30026.jpg.  Can we improve the accuracy?
+
+# Frequently Asked Questions
+
+Review the [FAQ](faq.md)
