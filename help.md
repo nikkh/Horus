@@ -59,7 +59,7 @@ This will post a message onto the training-requests queue and cause a model to b
 
 Sample documents are stored in GitHub along with everything else.  Samples are present in the [Generator project](https://github.com/nikkh/Horus/tree/master/Horus.Generator/Documents).  There is a directory for each fictious supplier (abc, oscorp and neuryon).  Documents in the range 30001-30010 are intended as training documents (you can process them but you will not gain any scores for doing so) documents 30011 onwards unseen, you can upload them without the system ever having encountered them before and they should still be recognised.
 
-Once your model has been trained for a particular document format, then you are ready to process some previously unseen documents.  These documents have not been used as part of the training cycle and can now be recognized and processed automatically, ven though they have never been seen before.  ___This is the eseence of the value of Forms Recognizer___. You train a model for each type (format) of document that you recieve, and then all future documents of that type can be recognised automatically.
+Once your model has been trained for a particular document format, then you are ready to process some previously unseen documents.  These documents have not been used as part of the training cycle and can now be recognized and processed automatically, ven though they have never been seen before.  ___This is the essence of the value of Forms Recognizer___. You train a model for each type (format) of document that you recieve, and then all future documents of that type can be recognised automatically.
 
 Let's get going.  You will remember from the description of resources that there is a staging storage account automatically created by the deployment. it should be called `app-random-stage`.  This strage account is monitored by an Event Grid subscription so whatever containers  you create, uploading a document into those containers will cause the subscription to fire and place message on the *incoming-documents* service bus queue.
 
@@ -72,6 +72,10 @@ After a minute or so, processing should have finished.  The simplest way to chec
 Scores will be updated after a maximum of 5 minutes.  if you check the scoreboard at this point you should see you have received some points for processing an unseen document:
 
 ![scoreboard](images/horus-scoreboard.jpg)
+
+>Notice the hightlights documents on the scoreboard image - one has an accuracy of 97%, the other has 47%.  Why is this?  To identifying problems and improving 
+
+# Understanding what happened during the recognition process
 
 
 
