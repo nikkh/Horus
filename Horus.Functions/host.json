@@ -1,5 +1,12 @@
 {
-    "version": "2.0",
+  "version": "2.0",
+  "extensions": {
+    "durableTask": {
+      "tracing": {
+        "DistributedTracingProtocol": "W3CTraceContext"
+      }
+    }
+  },
   "logging": {
     "logLevel": {
       "Host.Triggers.DurableTask": "Warning",
@@ -24,6 +31,11 @@
       "Function.TrainingErrorHandler": "Trace",
       "Function.PrcoessingErrorHandler": "Trace",
       "default": "Trace"
+    },
+    "applicationInsights": {
+      "httpAutoCollectionOptions": {
+        "enableW3CDistributedTracing": true
+      }
     }
   }
 }
