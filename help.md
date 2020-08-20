@@ -57,8 +57,22 @@ This will post a message onto the training-requests queue and cause a model to b
 
 ## Submit some 'Previously Unseen' documents
 
+Sample documents are stored in GitHub along with everything else.  Samples are present in the [Generator project](https://github.com/nikkh/Horus/tree/master/Horus.Generator/Documents).  There is a directory for each fictious supplier (abc, oscorp and neuryon).  Documents in the range 30001-30010 are intended as training documents (you can process them but you will not gain any scores for doing so) documents 30011 onwards unseen, you can upload them without the system ever having encountered them before and they should still be recognised.
+
 Once your model has been trained for a particular document format, then you are ready to process some previously unseen documents.  These documents have not been used as part of the training cycle and can now be recognized and processed automatically, ven though they have never been seen before.  ___This is the eseence of the value of Forms Recognizer___. You train a model for each type (format) of document that you recieve, and then all future documents of that type can be recognised automatically.
 
-Let's get going.  You will remember from the description of resources that there is a stagin storage account automatically created by the deployment.
+Let's get going.  You will remember from the description of resources that there is a staging storage account automatically created by the deployment. it should be called `app-random-stage`.  This strage account is monitored by an Event Grid subscription so whatever containers  you create, uploading a document into those containers will cause the subscription to fire and place message on the *incoming-documents* service bus queue.
+
+The first thing that happens then is that the document is renamed to include the document format in the name.  In our case we are currently working with the *abc* format - so if we upload invoice1.pdf it will be renamed to abc-invoice1.pdf and it will be referenced thus for the rest of the workflow.
+
+Ensure that there is a container called 8abc* in the staging storage account.  Then (using [Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/) or Azure Portal), upload a document to the abc container.  After a few seconds the document should disappear - this is becasue it has been renamed and moved to the orchestration container for the workflow that is processing it.
+
+After a minute or so, processing should have finished.  The simplest way to check this is to access the Sql databse using Sql Server Management Studio or your favourite tool.  The connection string for the processing database can be found int he app-func configuration.  Use this to access the database.  The documents table should now contain a record for the invoice that you uploaded.  Repeat with a couple of other of the same documents.
+
+Scores will be updated after a maximum of 5 minutes.  if you check the scoreboard at this point you should see you have received some points for processing an unseen document:
+
+![scoreboard](images/horus-scoreboard.jpg)
+
+
 
 
