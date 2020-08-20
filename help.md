@@ -29,7 +29,7 @@ At this stage you should have a screen in your labelling tool that looks like th
 
 And it's time to submit a Training Request.
 
-___ you will also need to create custo labelling projects for the other two document formats ___
+___you will also need to create custo labelling projects for the other two document formats (oscorp and neuryon)___
 
 ## Submit a Training Request
 
