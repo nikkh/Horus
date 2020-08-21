@@ -91,6 +91,10 @@ namespace Horus.Functions
                         job = await context.CallActivityAsync<DocumentProcessingJob>("RecognizerCompleted", job);
                         break;
                     }
+                    if (job.LatestRecognizerStatus == RecognizerStatus.Failed)
+                    {
+                        throw new Exception($"Recognizer Status is failed - need to investigate!!!.  RecognizerResponse = {job.RecognizerResponse}, orchestrationId = {job.OrchestrationId}");
+                    }
                     // Orchestration sleeps until this time.
                     var nextCheck = context.CurrentUtcDateTime.AddSeconds(pollingInterval);
                     await context.CreateTimer(nextCheck, CancellationToken.None);
