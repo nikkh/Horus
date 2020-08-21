@@ -147,7 +147,7 @@ Once we retrain the model with labels specifically for this invoice then we get 
 
 However, the newly trained model is now more 'intelligent', so not only can it dumbly interpet the labels we have assigned to invoice-30026 to improve accuracy from 44% to 84%, but this new knowledge can also be applied to other documents. If we re-run processing for all the ABC documents we should see an improvement in accuracy across the board:
 
-![scoreboard after reruning all invoices after training](scoreboard-after-rerunning-all-invoices-after-retraining.png)
+![scoreboard after reruning all invoices after training](images/scoreboard-after-rerunning-all-invoices-after-retraining.png)
 
 
 
