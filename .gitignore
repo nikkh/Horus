@@ -341,3 +341,5 @@ healthchecksdb
 /Horus.Trainer/Properties/launchSettings.json
 /Horus.Trainer/appsettings.local.json
 /Horus.Trainer/TrainingRequest.json
+/Horus.Functions/local.settings.horus.json
+/Horus.Functions/local.settings.spo0ons.json

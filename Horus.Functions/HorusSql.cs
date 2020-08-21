@@ -14,7 +14,7 @@ namespace Horus.Functions.Data
         public static readonly string sqlConnectionString = Environment.GetEnvironmentVariable("SQLConnectionString");
         public static void CheckAndCreateDatabaseIfNecessary(ILogger log)
         {
-           
+
             using (SqlConnection connection = new SqlConnection(sqlConnectionString))
             {
                 connection.Open();
@@ -49,7 +49,7 @@ namespace Horus.Functions.Data
                         "[OrderDate] [datetime2](7) NULL, [FileName] [nvarchar](50) NULL, [ShreddingUtcDateTime] [datetime2](7) NOT NULL, [TimeToShred] [bigint] NOT NULL, [RecognizerStatus] [nvarchar](50) NULL," +
                         "[RecognizerErrors] [nvarchar](50) NULL, [UniqueRunIdentifier] [nvarchar](50) NOT NULL, [TerminalErrorCount] [int] NOT NULL, [WarningErrorCount] [int] NOT NULL, [IsValid] [bit] NOT NULL," +
                         "[Account] [nvarchar](50) NULL,	[VatAmount] [decimal](19, 5) NULL,	[ShippingTotal] [decimal](19, 5) NULL, [NetTotal] [decimal](19, 5) NULL, [GrandTotal] [decimal](19, 5) NULL, [PostCode] [nvarchar](10) NULL, [Thumbprint] [nvarchar](50) NULL, " +
-                        "[TaxPeriod] [nvarchar](6) NULL, [ModelId] [nvarchar](50) NULL, [ModelVersion] [nvarchar](50) NULL " +
+                        "[TaxPeriod] [nvarchar](6) NULL, [ModelId] [nvarchar](50) NULL, [ModelVersion] [nvarchar](50) NULL, [LatestVersionIndicator] [bit] NULL, [DocumentVersion] [int] NULL " +
                         "PRIMARY KEY CLUSTERED ([Id] ASC)WITH(STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON[PRIMARY]) ON[PRIMARY]";
                 command.CommandText = commandStr;
                 command.ExecuteNonQuery();
@@ -96,7 +96,7 @@ namespace Horus.Functions.Data
                 try
                 {
                     command.CommandText = $"SELECT count(*) FROM document";
-                    rowCount = (int)command.ExecuteScalar();                
+                    rowCount = (int)command.ExecuteScalar();
                 }
                 catch (Exception e)
                 {
@@ -217,16 +217,31 @@ namespace Horus.Functions.Data
                 transaction = connection.BeginTransaction("DocumentTransaction");
                 command.Connection = connection;
                 command.Transaction = transaction;
-                string safePostCode= document.PostCode;
+                // remove flag for current latest version
+                command.CommandText = $"UPDATE Document set LatestVersionIndicator = 'FALSE' where fileName='{document.FileName}' and LatestVersionIndicator='{true}'";
+                command.ExecuteNonQuery();
+
+                // get next version number
+                command.CommandText = $"SELECT MAX(DocumentVersion) AS CurrentDocVersion from Document WHERE fileName='{document.FileName}'";
+                int currentDocVersion = 0;
+
+                var objResult = command.ExecuteScalar();
+                if (objResult != DBNull.Value && objResult != null)
+                {
+                    currentDocVersion = (int)objResult;
+                }
+                int newDocVersion = currentDocVersion + 1;
+
+                string safePostCode = document.PostCode;
                 try
                 {
-                    if (document.PostCode.Length > 10) 
+                    if (document.PostCode.Length > 10)
                     {
                         safePostCode = document.PostCode.Substring(0, 10);
                     }
                     // Add the document 
-                    string insertClause = $"Insert into Document (DocumentNumber, OrderNumber, FileName, ShreddingUtcDateTime, TimeToShred, RecognizerStatus, RecognizerErrors, UniqueRunIdentifier, TerminalErrorCount, WarningErrorCount, IsValid, Account, VatAmount, ShippingTotal, NetTotal, GrandTotal, PostCode, Thumbprint, TaxPeriod, ModelId, ModelVersion";
-                    string valuesClause = $" VALUES ('{document.DocumentNumber}', '{document.OrderNumber}','{document.FileName}', '{document.ShreddingUtcDateTime.ToString("yyyy-MM-dd HH:mm:ss.fff")}', '{document.TimeToShred}', '{document.RecognizerStatus}', '{document.RecognizerErrors}','{document.UniqueRunIdentifier}', '{document.TerminalErrorCount}','{document.WarningErrorCount}', '{document.IsValid}', '{document.Account}', '{document.VatAmount}', '{document.ShippingTotal}', '{document.NetTotal}', '{document.GrandTotal}', '{safePostCode}', '{document.Thumbprint}','{document.TaxPeriod}','{document.ModelId}','{document.ModelVersion}'";
+                    string insertClause = $"Insert into Document (DocumentNumber, OrderNumber, FileName, ShreddingUtcDateTime, TimeToShred, RecognizerStatus, RecognizerErrors, UniqueRunIdentifier, TerminalErrorCount, WarningErrorCount, IsValid, Account, VatAmount, ShippingTotal, NetTotal, GrandTotal, PostCode, Thumbprint, TaxPeriod, ModelId, ModelVersion, LatestVersionIndicator, DocumentVersion";
+                    string valuesClause = $" VALUES ('{document.DocumentNumber}', '{document.OrderNumber}','{document.FileName}', '{document.ShreddingUtcDateTime.ToString("yyyy-MM-dd HH:mm:ss.fff")}', '{document.TimeToShred}', '{document.RecognizerStatus}', '{document.RecognizerErrors}','{document.UniqueRunIdentifier}', '{document.TerminalErrorCount}','{document.WarningErrorCount}', '{document.IsValid}', '{document.Account}', '{document.VatAmount}', '{document.ShippingTotal}', '{document.NetTotal}', '{document.GrandTotal}', '{safePostCode}', '{document.Thumbprint}','{document.TaxPeriod}','{document.ModelId}','{document.ModelVersion}','{true}','{newDocVersion}'";
                     if (document.TaxDate != null)
                     {
                         DateTime taxDate = (DateTime)document.TaxDate;
@@ -294,143 +309,54 @@ namespace Horus.Functions.Data
                 log.LogInformation($"Document {document.DocumentNumber} was written to SQL database {connection.Database}");
             }
         }
-
-        public static Document LoadDocument(string fileName, ILogger log)
-        {
-            Document document=null;
-            using (SqlConnection connection = new SqlConnection(sqlConnectionString))
-            {
-                connection.Open();
-                SqlCommand command = connection.CreateCommand();
-                command.Connection = connection;
-                try
-                {
-                    int documentId = 0;
-                    command.CommandText = $"select * from Document where FileName = '{fileName}' order by ShreddingUtcDateTime desc";
-                    SqlDataReader reader = command.ExecuteReader();
-                    try
-                    {
-                        while (reader.Read())
-                        {
-
-                            documentId = (int)reader["Id"];
-                            document = new Document
-                            {
-                                Account = reader.GetValue<string>("Account"),
-                                DocumentNumber = reader.GetValue<string>("DocumentNumber"),
-                                TaxDate = reader.GetValue<DateTime>("TaxDate"),
-                                FileName = reader.GetValue<string>("FileName"),
-                                GrandTotal = reader.GetValue<decimal>("GrandTotal"),
-                                NetTotal = reader.GetValue<decimal>("NetTotal"),
-                                PostCode = reader.GetValue<string>("PostCode"),
-                                ShippingTotal = reader.GetValue<decimal>("ShippingTotal"),
-                                VatAmount = reader.GetValue<decimal>("VatAmount"),
-                                TaxPeriod = reader.GetValue<string>("TaxPeriod"),
-                                OrderDate = reader.GetValue<DateTime>("OrderDate"),
-                                OrderNumber = reader.GetValue<string>("OrderNumber")
-                            };
-                            break;
-
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        log.LogError($"Exception prevented reading Document {document.DocumentNumber} from SQL database {connection.Database}.  Message is {e.Message}");
-                        throw e;
-                    }
-                    finally
-                    {
-                        reader.Close();
-                    }
-
-                    if (document == null)
-                    {
-                        log.LogInformation($"Requested document {fileName} not found in database");
-                        return null;
-                    }
-
-                    command.CommandText = $"select * from DocumentLineItem where DocumentId = '{documentId}' order by DocumentLineNumber";
-                    reader = command.ExecuteReader();
-                    try
-                    {
-                        while (reader.Read())
-                        {
-                            
-                            var lineItem = new DocumentLineItem 
-                            {
-                                DiscountPercent = reader.GetValue<decimal>("DiscountPercent"),
-                                DocumentLineNumber = reader.GetValue<string>("DocumentLineNumber"),
-                                ItemDescription = reader.GetValue<string>("ItemDescription"),
-                                LineQuantity = reader.GetValue<string>("LineQuantity"),
-                                VATCode = reader.GetValue<string>("VATCode"), 
-                                NetAmount = reader.GetValue<decimal>("NetAmount"),
-                                Taxableindicator = reader.GetValue<string>("Taxableindicator"), 
-                                UnitPrice = reader.GetValue<decimal>("UnitPrice")
-                            };
-                            document.LineItems.Add(lineItem);
-                        }
-                    }
-                    finally
-                    {
-                        reader.Close();
-                    }
-                }
-                catch (Exception e)
-                {
-                    log.LogError($"Exception prevented reading Document Lines for document {document.DocumentNumber} from SQL database {connection.Database}.  Message is {e.Message}");
-                    throw e;
-                }
-                log.LogInformation($"Document {document.DocumentNumber} was read from SQL database {connection.Database}");
-                return document;
-            }
-        }
     }
-
-    /// <summary>
-    /// Helper class for SqlDataReader, which allows for the calling code to retrieve a value in a generic fashion.
-    /// </summary>
-    public static class SqlReaderHelper
-    {
-        private static bool IsNullableType(Type theValueType)
-        {
-            return (theValueType.IsGenericType && theValueType.GetGenericTypeDefinition().Equals(typeof(Nullable<>)));
-        }
 
         /// <summary>
-        /// Returns the value, of type T, from the SqlDataReader, accounting for both generic and non-generic types.
+        /// Helper class for SqlDataReader, which allows for the calling code to retrieve a value in a generic fashion.
         /// </summary>
-        /// <typeparam name="T">T, type applied</typeparam>
-        /// <param name="theReader">The SqlDataReader object that queried the database</param>
-        /// <param name="theColumnName">The column of data to retrieve a value from</param>
-        /// <returns>T, type applied; default value of type if database value is null</returns>
-        public static T GetValue<T>(this SqlDataReader theReader, string theColumnName)
+        public static class SqlReaderHelper
         {
-            // Read the value out of the reader by string (column name); returns object
-            object theValue = theReader[theColumnName];
-
-            // Cast to the generic type applied to this method (i.e. int?)
-            Type theValueType = typeof(T);
-
-            // Check for null value from the database
-            if (DBNull.Value != theValue)
+            private static bool IsNullableType(Type theValueType)
             {
-                // We have a null, do we have a nullable type for T?
-                if (!IsNullableType(theValueType))
-                {
-                    // No, this is not a nullable type so just change the value's type from object to T
-                    return (T)Convert.ChangeType(theValue, theValueType);
-                }
-                else
-                {
-                    // Yes, this is a nullable type so change the value's type from object to the underlying type of T
-                    NullableConverter theNullableConverter = new NullableConverter(theValueType);
-
-                    return (T)Convert.ChangeType(theValue, theNullableConverter.UnderlyingType);
-                }
+                return (theValueType.IsGenericType && theValueType.GetGenericTypeDefinition().Equals(typeof(Nullable<>)));
             }
 
-            // The value was null in the database, so return the default value for T; this will vary based on what T is (i.e. int has a default of 0)
-            return default(T);
+            /// <summary>
+            /// Returns the value, of type T, from the SqlDataReader, accounting for both generic and non-generic types.
+            /// </summary>
+            /// <typeparam name="T">T, type applied</typeparam>
+            /// <param name="theReader">The SqlDataReader object that queried the database</param>
+            /// <param name="theColumnName">The column of data to retrieve a value from</param>
+            /// <returns>T, type applied; default value of type if database value is null</returns>
+            public static T GetValue<T>(this SqlDataReader theReader, string theColumnName)
+            {
+                // Read the value out of the reader by string (column name); returns object
+                object theValue = theReader[theColumnName];
+
+                // Cast to the generic type applied to this method (i.e. int?)
+                Type theValueType = typeof(T);
+
+                // Check for null value from the database
+                if (DBNull.Value != theValue)
+                {
+                    // We have a null, do we have a nullable type for T?
+                    if (!IsNullableType(theValueType))
+                    {
+                        // No, this is not a nullable type so just change the value's type from object to T
+                        return (T)Convert.ChangeType(theValue, theValueType);
+                    }
+                    else
+                    {
+                        // Yes, this is a nullable type so change the value's type from object to the underlying type of T
+                        NullableConverter theNullableConverter = new NullableConverter(theValueType);
+
+                        return (T)Convert.ChangeType(theValue, theNullableConverter.UnderlyingType);
+                    }
+                }
+
+                // The value was null in the database, so return the default value for T; this will vary based on what T is (i.e. int has a default of 0)
+                return default(T);
+            }
         }
-    }
+
 }
