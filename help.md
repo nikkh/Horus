@@ -161,7 +161,7 @@ and here is the same query for the previous inspection run (prior to retraining 
 
 ![log-analytics-30030-after-retrain](images/log-analytics-30030-after-retrain.png)
 
-This is really quite startling.  
+This is really quite startling. The improved form recognizer model is now able to correctly has been able to correctly identify NetPrice and Postcode.  
 
 # Frequently Asked Questions
 
