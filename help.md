@@ -159,7 +159,7 @@ Here is a log analytics query (over the app-inspect application insights instanc
 
 and here is the same query for the previous inspection run (prior to retraining the model with the tags from 30026):
 
-![log-analytics-30030-before-retrain](images/log-analytics-30030-before-retrain.png)
+![log-analytics-30030-after-retrain](images/log-analytics-30030-after-retrain.png)
 
 This is really quite startling.  
 
