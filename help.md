@@ -141,6 +141,10 @@ If we look at the invoice it has a few line items where the product description 
 
 ![invoice-30026](images/invoice-30026.jpg)
 
+Once we retrain the model with labels specifically for this invoic ehten we get a significantly improved score for this invoice:
+
+![scoreboard after labelling 30026 and retraining](images/scoreboard-after-invoice-30026-retrain.png)
+
 # Frequently Asked Questions
 
 Review the [FAQ](faq.md)
