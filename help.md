@@ -88,9 +88,9 @@ There are a number of ways to understand what happened during recognition:
 1. Look at the Document Errors in the database
 2. Look at Application Insights for the processing run
 3. Look at the Job Log for each individual processing run
-4. Look at application insights for the scoreboard calculation (inspection)
+4. Look at Application Insights for the scoreboard calculation (inspection)
 
-Of there, items 1-3 are always available.  item is only available if you are taking part in a challenge or have deployed your own scorecard infrastructure.
+Of there, items 1-3 are always available.  Item 4 is only available if you are taking part in a challenge or have deployed your own scorecard infrastructure.
 
 Each of these options is breifly explained below:
 
@@ -104,11 +104,7 @@ As can be seen from the above screenshot, a number of erros were encountered whe
 
 ## Application Insights for Processing
 
-The Application Insights instance for processing is best for understanding how an individual document (or training request) has been processed, and diagnosing problems (such as exceptions thrown).
-
-Probably the easiest way to access this data is again using application insights search for the document name.  You will find a lot of trace records for a document, but if you click on any one of them you will be taken to acorrelated trace history for that document run:
-
-![horus app insights distributed trace example](images/horus-ai-dist-trace.jpg)
+___Need to introduce application insights correlation for durable tasks here...___
 
 ## Job Log
 
@@ -138,6 +134,12 @@ In this case abc-INVOICE-30026 scored only 44 / 100.  Why was that?  Which field
 # Improving Recognition Accuracy
 
 We have noticed throughout that there are some problems with abc-INVOICE-30026.jpg.  Can we improve the accuracy?
+
+Probably the most effective thing you can do to improve accuracy is to identify those documents that have a low accuracy score, and then use those to train the model.  Prior to specific labelling and training we had a score of 44 /100.
+
+If we look at the invoice it has a few line items where the product description word wraps:
+
+![invoice-30026](images/invoice-30026.jpg)
 
 # Frequently Asked Questions
 
