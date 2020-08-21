@@ -104,7 +104,11 @@ As can be seen from the above screenshot, a number of erros were encountered whe
 
 ## Application Insights for Processing
 
-___Need to introduce application insights correlation for durable tasks here...___
+The Application Insights instance for processing is best for understanding how an individual document (or training request) has been processed, and diagnosing problems (such as exceptions thrown).
+
+Probably the easiest way to access this data is again using application insights search for the document name.  You will find a lot of trace records for a document, but if you click on any one of them you will be taken to acorrelated trace history for that document run:
+
+![horus app insights distributed trace example](images/horus-ai-dist-trace.jpg)
 
 ## Job Log
 
