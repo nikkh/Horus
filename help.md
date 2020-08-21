@@ -149,9 +149,19 @@ However, the newly trained model is now more 'intelligent', so not only can it d
 
 ![scoreboard after reruning all invoices after training](images/scoreboard-after-rerunning-all-invoices-after-retraining.png)
 
+You can see from this that the overall score for accuracy across the abc document set has increased from 1828 to 1989.  Let's investigate what happened here.  
 
+Let's drill down into 30030.  Prior to relabelling 30026 and retraining the model it had a score of 87, after this rose to 93.  
 
+Here is a log analytics query (over the app-inspect application insights instance) that pulls out the logs for fields that dont match when processing this document:
 
+![log-analytics-30030-before-retrain](images/log-analytics-30030-before-retrain.png)
+
+and here is the same query for the previous inspection run (prior to retraining the model with the tags from 30026):
+
+![log-analytics-30030-before-retrain](images/log-analytics-30030-before-retrain.png)
+
+This is really quite startling.  
 
 # Frequently Asked Questions
 
