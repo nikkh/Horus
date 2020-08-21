@@ -141,9 +141,17 @@ If we look at the invoice it has a few line items where the product description 
 
 ![invoice-30026](images/invoice-30026.jpg)
 
-Once we retrain the model with labels specifically for this invoic ehten we get a significantly improved score for this invoice:
+Once we retrain the model with labels specifically for this invoice then we get a significantly improved score for this invoice:
 
 ![scoreboard after labelling 30026 and retraining](images/scoreboard-after-invoice-30026-retrain.png)
+
+However, the newly trained model is now more 'intelligent', so not only can it dumbly interpet the labels we have assigned to invoice-30026 to improve accuracy from 44% to 84%, but this new knowledge can also be applied to other documents. If we re-run processing for all the ABC documents we should see an improvement in accuracy across the board:
+
+![scoreboard after reruning all invoices after training](scoreboard-after-rerunning-all-invoices-after-retraining.png)
+
+
+
+
 
 # Frequently Asked Questions
 
