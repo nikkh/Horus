@@ -23,7 +23,7 @@ jobs:
         # If your function app project is not located in your repository's root
         # Please consider using pushd to change your path
         pushd Horus.Inspector
-        # dotnet nuget add source https://www.myget.org/F/azure-appservice-staging/api/v3/index.json -n azure-appservice-staging
+        dotnet nuget add source https://www.myget.org/F/azure-appservice-staging/api/v3/index.json -n azure-appservice-staging
         dotnet build --configuration Debug --output ./output
         popd 
         
