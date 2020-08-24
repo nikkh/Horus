@@ -309,6 +309,95 @@ namespace Horus.Functions.Data
                 log.LogInformation($"Document {document.DocumentNumber} was written to SQL database {connection.Database}");
             }
         }
+        public static Document LoadDocument(string fileName, ILogger log)
+        {
+            Document document = null;
+            using (SqlConnection connection = new SqlConnection(sqlConnectionString))
+            {
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                command.Connection = connection;
+                try
+                {
+                    int documentId = 0;
+                    command.CommandText = $"select * from Document where FileName = '{fileName}' order by ShreddingUtcDateTime desc";
+                    SqlDataReader reader = command.ExecuteReader();
+                    try
+                    {
+                        while (reader.Read())
+                        {
+
+                            documentId = (int)reader["Id"];
+                            document = new Document
+                            {
+                                Account = reader.GetValue<string>("Account"),
+                                DocumentNumber = reader.GetValue<string>("DocumentNumber"),
+                                TaxDate = reader.GetValue<DateTime>("TaxDate"),
+                                FileName = reader.GetValue<string>("FileName"),
+                                GrandTotal = reader.GetValue<decimal>("GrandTotal"),
+                                NetTotal = reader.GetValue<decimal>("NetTotal"),
+                                PostCode = reader.GetValue<string>("PostCode"),
+                                ShippingTotal = reader.GetValue<decimal>("ShippingTotal"),
+                                VatAmount = reader.GetValue<decimal>("VatAmount"),
+                                TaxPeriod = reader.GetValue<string>("TaxPeriod"),
+                                OrderDate = reader.GetValue<DateTime>("OrderDate"),
+                                OrderNumber = reader.GetValue<string>("OrderNumber")
+                            };
+                            break;
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        log.LogError($"Exception prevented reading Document {document.DocumentNumber} from SQL database {connection.Database}.  Message is {e.Message}");
+                        throw e;
+                    }
+                    finally
+                    {
+                        reader.Close();
+                    }
+
+                    if (document == null)
+                    {
+                        log.LogInformation($"Requested document {fileName} not found in database");
+                        return null;
+                    }
+
+                    command.CommandText = $"select * from DocumentLineItem where DocumentId = '{documentId}' order by DocumentLineNumber";
+                    reader = command.ExecuteReader();
+                    try
+                    {
+                        while (reader.Read())
+                        {
+
+                            var lineItem = new DocumentLineItem
+                            {
+                                DiscountPercent = reader.GetValue<decimal>("DiscountPercent"),
+                                DocumentLineNumber = reader.GetValue<string>("DocumentLineNumber"),
+                                ItemDescription = reader.GetValue<string>("ItemDescription"),
+                                LineQuantity = reader.GetValue<string>("LineQuantity"),
+                                VATCode = reader.GetValue<string>("VATCode"),
+                                NetAmount = reader.GetValue<decimal>("NetAmount"),
+                                Taxableindicator = reader.GetValue<string>("Taxableindicator"),
+                                UnitPrice = reader.GetValue<decimal>("UnitPrice")
+                            };
+                            document.LineItems.Add(lineItem);
+                        }
+                    }
+                    finally
+                    {
+                        reader.Close();
+                    }
+                }
+                catch (Exception e)
+                {
+                    log.LogError($"Exception prevented reading Document Lines for document {document.DocumentNumber} from SQL database {connection.Database}.  Message is {e.Message}");
+                    throw e;
+                }
+                log.LogInformation($"Document {document.DocumentNumber} was read from SQL database {connection.Database}");
+                return document;
+            }
+        }
     }
 
         /// <summary>
