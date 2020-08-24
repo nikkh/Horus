@@ -1,7 +1,7 @@
 name: Inspector Functions 
 env:
    LOCATION: uksouth
-   APPLICATION_NAME: horus
+   APPLICATION_NAME: spo0ons
 on: [workflow_dispatch]
       
 jobs:
