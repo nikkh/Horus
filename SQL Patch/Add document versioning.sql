@@ -1,7 +1,6 @@
 select fileName, ShreddingUtcDateTime, LatestVersionIndicator, DocumentVersion from Document order by fileName asc, ShreddingUtcDateTime desc
 
 alter table document add DocumentVersion int
-select documentnumber, ShreddingUtcDateTime, ROW_NUMBER() OVER (partition by DocumentNumber order by ShreddingUtcDateTime asc) as Row# from document
 UPDATE document
 SET DocumentVersion = calculatedVersion
 FROM
@@ -25,3 +24,5 @@ FROM
     GROUP BY FileName) e
 	ON d.FileName = e.FileName and 
 	d.ShreddingUtcDateTime = e.MaxDateTime
+
+ SELECT MAX(DocumentVersion) AS CurrentDocVersion from Document WHERE fileName='abc-INVOICE-30025.pdf'

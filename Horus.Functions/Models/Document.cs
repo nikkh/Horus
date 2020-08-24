@@ -56,6 +56,9 @@ namespace Horus.Functions.Models
             } 
         }
 
+        public int DocumentVersion { get; set; }
+        public bool LatestVersionIndicator { get; set; }
+
         public void Print(bool terminalErrorsOnly = true)
         {
 

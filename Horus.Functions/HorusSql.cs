@@ -341,7 +341,9 @@ namespace Horus.Functions.Data
                                 VatAmount = reader.GetValue<decimal>("VatAmount"),
                                 TaxPeriod = reader.GetValue<string>("TaxPeriod"),
                                 OrderDate = reader.GetValue<DateTime>("OrderDate"),
-                                OrderNumber = reader.GetValue<string>("OrderNumber")
+                                OrderNumber = reader.GetValue<string>("OrderNumber"),
+                                DocumentVersion = reader.GetValue<int>("DocumentVersion"),
+                                LatestVersionIndicator = reader.GetValue<bool>("LatestVersionIndicator")
                             };
                             break;
 

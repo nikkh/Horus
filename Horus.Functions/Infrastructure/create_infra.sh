@@ -126,6 +126,7 @@ trainingQueueName="training-requests"
 az group create -n $resourceGroupName -l $location 
 
 # Create processing storage accounts... 
+
 az storage account create  --name $storageAccountName  --location $location  --resource-group $resourceGroupName  --sku Standard_LRS
 az storage account create  --name $stagingStorageAccountName  --location $location  --resource-group $resourceGroupName  --sku Standard_LRS
 az storage account create  --name $webjobStorageAccountName  --location $location  --resource-group $resourceGroupName  --sku Standard_LRS
@@ -189,7 +190,7 @@ serviceBusConnectionString=$(az servicebus namespace authorization-rule keys lis
 echo "Writing connections strings and secrets to $functionAppName configuration"
 
 # update Function App Settings
-az webapp config appsettings set -g $resourceGroupName -n $functionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString StagingStorageAccountConnectionString=$stagingStorageAccountConnectionString TeamName=$teamName RecognizerApiKey=$recognizerApiKey IncomingDocumentServiceBusConnectionString=$serviceBusConnectionString IncomingDocumentsQueue=$docQueueName TrainingQueue=$trainingQueueName CosmosAuthorizationKey=$cosmosAuthorizationKey RecognizerServiceBaseUrl=$frEndpoint CosmosEndPointUrl=$cosmosEndpointUrl CosmosDatabaseId=HorusDb CosmosContainerId=ParsedDocuments ProcessingEngineAssembly=$processingEngineAssembly ProcessingEngineType=$processingEngineType PersistenceEngineAssembly=$persistenceEngineAssembly PersistenceEngineType=$persistenceEngineType IntegrationEngineAssembly=$integrationEngineAssembly IntegrationEngineType=$integrationEngineType TrainingContainerSasUri=$trainingContainerSasUri "SQLConnectionString=$sqlConnectionString"
+az webapp config appsettings set -g $resourceGroupName -n $functionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString StagingStorageAccountConnectionString=$stagingStorageAccountConnectionString TeamName=$teamName RecognizerApiKey=$recognizerApiKey IncomingDocumentServiceBusConnectionString=$serviceBusConnectionString IncomingDocumentsQueue=$docQueueName TrainingQueue=$trainingQueueName CosmosAuthorizationKey=$cosmosAuthorizationKey RecognizerServiceBaseUrl=$frEndpoint CosmosEndPointUrl=$cosmosEndpointUrl CosmosDatabaseId=HorusDb CosmosContainerId=ParsedDocuments ProcessingEngineAssembly=$processingEngineAssembly ProcessingEngineType=$processingEngineType PersistenceEngineAssembly=$persistenceEngineAssembly PersistenceEngineType=$persistenceEngineType IntegrationEngineAssembly=$integrationEngineAssembly IntegrationEngineType=$integrationEngineType TrainingContainerSasUri=$trainingContainerSasUri "SQLConnectionString=$sqlConnectionString" --output none
 #
 if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then
  scoresApplicationName=$SCORES_APPLICATION_NAME
@@ -210,10 +211,10 @@ if [ "$BUILD_INSPECTION_INFRASTRUCTURE" ]; then
  scoresSQLConnectionString="${scoresDbConnectionStringWithUser/<password>/$SCORES_DB_PASSWORD}"
  # update Function App Settings
  echo "Writing connections strings and secrets to $inspectionFunctionAppName configuration"
- az webapp config appsettings set -g $resourceGroupName -n $inspectionFunctionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString TeamName=$teamName TrainingStorageAccountConnectionString=$trainingStorageAccountConnectionString "SQLConnectionString=$sqlConnectionString" DocumentTypesForChallenge="abc,nouryon,oscorp" "ScoresSQLConnectionString=$scoresSQLConnectionString"
+ az webapp config appsettings set -g $resourceGroupName -n $inspectionFunctionAppName --settings OrchestrationStorageAccountConnectionString=$storageAccountConnectionString TeamName=$teamName TrainingStorageAccountConnectionString=$trainingStorageAccountConnectionString "SQLConnectionString=$sqlConnectionString" DocumentTypesForChallenge="abc,nouryon,oscorp" "ScoresSQLConnectionString=$scoresSQLConnectionString" --output none
 fi
 
-echo -e "The random password generated for ${RED}$adminLogin${NC}, password was ${RED}$password${NC}"
-echo -e "The SAS Url for your training storage container abc is ${RED}$trainingContainerSasUri${NC}. You will need this for the custom labelling tool"
+# echo -e "The random password generated for ${RED}$adminLogin${NC}, password was ${RED}$password${NC}"
+# echo -e "The SAS Url for your training storage container abc is ${RED}$trainingContainerSasUri${NC}. You will need this for the custom labelling tool"
 
     
