@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Microsoft.Azure.ServiceBus;
 using Horus.Functions.Models;
 using System.Text;
+using System.Collections.Generic;
 
 namespace Horus.Functions
 {
@@ -34,6 +35,8 @@ namespace Horus.Functions
             csb.EntityPath = trainingQueue;
             var queueClient = new QueueClient(csb);
             string formats = "";
+            var response = new TrainingResponseMessage();
+
             foreach (var item in payload.Items)
             {
                 formats += item.DocumentFormat + ", ";
@@ -45,13 +48,16 @@ namespace Horus.Functions
                     IncludeSubFolders = "false",
                     UseLabelFile = "true"
                 };
+                response.TrainingRequestMessages.Add(trainingRequestMessage);
                 Console.WriteLine($"Sending Message for document format={item.DocumentFormat}");
                 string data = JsonConvert.SerializeObject(trainingRequestMessage);
                 Message message = new Message(Encoding.UTF8.GetBytes(data));
                 await queueClient.SendAsync(message);
             }
 
-            return new OkObjectResult($"HttpTrainRequest: your training request for document formats {formats.Substring(0, formats.Length-2)} submitted sucessfully.");
+
+            response.ResponseMessage = @"Training requests submitted sucessfully";
+            return new OkObjectResult(JsonConvert.SerializeObject(response));
         }
     }
 }
