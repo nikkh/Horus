@@ -37,11 +37,11 @@ ___you will also need to create custo labelling projects for the other two docum
 
 ## Submit a Training Request
 
-Submitting a training request triggers the [model training workflow](https://github.com/nikkh/Horus#model-training) in the horus application. The simplest way to submit a request is do so by sending an http POST message to the processing function app (app-func).  The function that triggers a training request is HttpTrainRequest.
+Submitting a training request triggers the [model training workflow](https://github.com/nikkh/Horus#model-training) in the horus application. The simplest way to submit a request is do so by sending an http POST message to the processing function app (app-func).  The function that triggers a training request is HttpTrainRequest. 
 
-In order to send a requestr to an Azure funciton you need to send a security code as part of the request.  This code can be obtained from the Azure Portal as described in [this](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook-trigger?tabs=csharp#obtaining-keys) document.
+In order to send a request to an Azure funciton you need to send a security code as part of the request.  This code can be obtained from the Azure Portal as described in [this](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook-trigger?tabs=csharp#obtaining-keys) document.
 
-Using Postman or similar construct a body as follows:
+[This web application](https://jolly-mud-0b7c08503.azurestaticapps.net/) will let you make this request easily. You could also use Postman or similar to construct a body as follows:
 
 ````
 {
