@@ -2,10 +2,10 @@ on: [workflow_dispatch]
  
 name: Processing Infrastructure
 env:
-  APPLICATION_NAME: horus
+  APPLICATION_NAME: ibex
   LOCATION: uksouth  
   SUPPRESS_CONFIRM: True
-  TEAM_NAME: Spo0onsmen
+  TEAM_NAME: antelopes
   BUILD_INSPECTION_INFRASTRUCTURE:  True
   SCORES_APPLICATION_NAME: horus-scores
   SCORES_DB_PASSWORD: ${{secrets.SCORES_DB_PASSWORD}}
