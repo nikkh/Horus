@@ -71,7 +71,7 @@ Let's get going.  You will remember from the description of resources that there
 
 The first thing that happens then is that the document is renamed to include the document format in the name.  In our case we are currently working with the *abc* format - so if we upload invoice1.pdf it will be renamed to abc-invoice1.pdf and it will be referenced thus for the rest of the workflow.
 
-Ensure that there is a container called 8abc* in the staging storage account.  Then (using [Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/) or Azure Portal), upload a document to the abc container.  After a few seconds the document should disappear - this is becasue it has been renamed and moved to the orchestration container for the workflow that is processing it.
+Ensure that there is a container called *abc* in the staging storage account.  Then (using [Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/) or Azure Portal), upload a document to the abc container.  After a few seconds the document should disappear - this is becasue it has been renamed and moved to the orchestration container for the workflow that is processing it.
 
 After a minute or so, processing should have finished.  The simplest way to check this is to access the Sql databse using Sql Server Management Studio or your favourite tool.  The connection string for the processing database can be found int he app-func configuration.  Use this to access the database.  The documents table should now contain a record for the invoice that you uploaded.  Repeat with a couple of other of the same documents.
 
